@@ -1,0 +1,3 @@
+const Razorpay=require('razorpay'); const crypto=require('crypto');
+exports.createOrder=async(req,res)=>{try{const instance=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET}); const order=await instance.orders.create({amount:req.body.amount*100,currency:'INR',receipt:`ws_${Date.now()}`}); res.json(order);}catch(e){res.status(500).json({message:e.message})}};
+exports.verify=(req,res)=>{const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=req.body; const sign=crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET).update(`${razorpay_order_id}|${razorpay_payment_id}`).digest('hex'); res.json({verified:sign===razorpay_signature});};

@@ -1,0 +1,1 @@
+const r=require('express').Router(); const c=require('../controllers/paymentController'); const {protect}=require('../middleware/auth'); r.post('/create-order',protect,c.createOrder); r.post('/verify',protect,c.verify); module.exports=r;

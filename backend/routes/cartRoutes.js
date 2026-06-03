@@ -1,0 +1,1 @@
+const r=require('express').Router(); const c=require('../controllers/cartController'); const {protect}=require('../middleware/auth'); r.use(protect); r.route('/').post(c.add).get(c.list); r.route('/:id').put(c.update).delete(c.remove); module.exports=r;
