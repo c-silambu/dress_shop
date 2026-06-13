@@ -11,7 +11,9 @@ export default function AdminUsers() {
   return (
     <>
       <h1 className="mb-6 text-4xl font-black text-blue-900">Users</h1>
-      <div className="overflow-hidden rounded-3xl bg-white shadow">
+
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden rounded-3xl bg-white shadow md:block">
         <table className="w-full">
           <thead className="bg-blue-100 text-left text-blue-900">
             <tr>
@@ -32,6 +34,18 @@ export default function AdminUsers() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="grid gap-4 md:hidden">
+        {users.map((user) => (
+          <div key={user._id} className="rounded-3xl border border-blue-100 bg-white p-4 shadow">
+            <p className="text-lg font-black text-blue-950">{user.name}</p>
+            <p className="mt-1 text-sm text-slate-600">{user.email}</p>
+            <p className="mt-1 text-sm text-slate-600">{user.phone}</p>
+            <p className="mt-1 text-xs text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</p>
+          </div>
+        ))}
       </div>
     </>
   );

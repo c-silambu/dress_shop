@@ -1,148 +1,101 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, ShoppingBag, Sparkles, Star } from "lucide-react";
 
 const heroSlides = [
   {
     tag: "Premium Ethnic Wear",
     title: "Blue elegance for every beautiful moment",
-    text: "Explore fresh dress styles with soft glow, premium cards, and modern shopping feel.",
-    image:
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
+    text: "Explore fresh dress styles with soft glow and modern shopping feel.",
+    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
+    accent: "from-blue-900/90 via-blue-800/60",
   },
   {
     tag: "Jewellery Glow",
     title: "Shine brighter with classy jewellery picks",
-    text: "Modern jewellery collections with rich reflections and blue-white luxury styling.",
-    image:
-      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80",
+    text: "Modern jewellery collections with rich reflections and luxury styling.",
+    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80",
+    accent: "from-slate-900/90 via-pink-900/40",
   },
   {
     tag: "New Collection",
     title: "Trendy dresses made for daily confidence",
-    text: "Simple, stylish, and mobile-friendly layouts for a professional store look.",
-    image:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1200&q=80",
+    text: "Simple, stylish layouts for a professional store look.",
+    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1200&q=80",
+    accent: "from-slate-950/90 via-blue-950/50",
   },
   {
     tag: "Festive Mood",
     title: "Soft festive looks with premium feel",
-    text: "Give your customers a clean shopping experience with attractive visual sections.",
-    image:
-      "https://images.unsplash.com/photo-1622122201714-77da0ca8e5d2?auto=format&fit=crop&w=1200&q=80",
+    text: "Give your customers a clean shopping experience.",
+    image: "https://images.unsplash.com/photo-1622122201714-77da0ca8e5d2?auto=format&fit=crop&w=1200&q=80",
+    accent: "from-pink-950/80 via-slate-900/60",
   },
   {
     tag: "Modern Accessories",
     title: "Complete your style with glowing details",
-    text: "Beautiful hero slides, collection cards, and smooth animation effects.",
-    image:
-      "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&w=1200&q=80",
+    text: "Beautiful slides, collection cards, and smooth effects.",
+    image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&w=1200&q=80",
+    accent: "from-blue-950/90 via-slate-900/50",
   },
 ];
 
 const dressCollection = [
-  {
-    tag: "Campus Ethnic",
-    title: "Churidar mood",
-    image:
-      "https://images.unsplash.com/photo-1612722432474-b971cdcea546?auto=format&fit=crop&w=900&q=80",
-  },
-{
-  tag: "Elegant Daily",
-  title: "Cotton comfort",
-  image:
-    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
-},
-{
-  tag: "Wedding",
-  title: "Lehenga glow",
-  image:
-    "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
-},
-  {
-    tag: "Celebration",
-    title: "Saree style",
-    image:
-      "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=900&q=80",
-  },
+  { tag: "Campus Ethnic", title: "Churidar mood", image: "https://images.unsplash.com/photo-1612722432474-b971cdcea546?auto=format&fit=crop&w=900&q=80" },
+  { tag: "Elegant Daily", title: "Cotton comfort", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80" },
+  { tag: "Wedding", title: "Lehenga glow", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80" },
+  { tag: "Celebration", title: "Saree style", image: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=900&q=80" },
 ];
 
 const jewelleryCollection = [
-  {
-    tag: "Necklace",
-    title: "Royal shine",
-    image:
-      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    tag: "Earrings",
-    title: "Soft sparkle",
-    image:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    tag: "Bracelet",
-    title: "Daily glow",
-    image:
-      "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    tag: "Rings",
-    title: "Premium detail",
-    image:
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=900&q=80",
-  },
+  { tag: "Necklace", title: "Royal shine", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=900&q=80" },
+  { tag: "Earrings", title: "Soft sparkle", image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=900&q=80" },
+  { tag: "Bracelet", title: "Daily glow", image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=900&q=80" },
+  { tag: "Rings", title: "Premium detail", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=900&q=80" },
 ];
 
-function CollectionSection({ eyebrow, title, subtitle, items, buttonText, to }) {
+const stats = [
+  { value: "500+", label: "Products" },
+  { value: "2K+", label: "Customers" },
+  { value: "4.9★", label: "Rating" },
+  { value: "Free", label: "Delivery" },
+];
+
+function CollectionSection({ eyebrow, title, items, buttonText, to }) {
   return (
-    <section className="relative max-w-7xl mx-auto px-4 py-16 overflow-hidden">
-      <div className="absolute left-0 top-20 h-40 w-40 rounded-full bg-blue-400/20 blur-3xl" />
-      <div className="absolute right-4 bottom-20 h-56 w-56 rounded-full bg-sky-300/20 blur-3xl" />
-
-      <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
+    <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+      <div className="mb-5 flex items-end justify-between">
         <div>
-          <p className="text-blue-600 font-bold uppercase tracking-[0.35em] text-xs">
-            {eyebrow}
-          </p>
-          <h2 className="mt-3 text-3xl md:text-5xl font-black text-slate-950">
-            {title}
-          </h2>
-          <p className="mt-3 max-w-2xl text-slate-500 leading-7">{subtitle}</p>
+          <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.3em] text-blue-600">{eyebrow}</span>
+          <h2 className="mt-2 text-2xl font-black text-slate-900 md:text-4xl">{title}</h2>
         </div>
-
-        <Link
-          to={to}
-          className="group inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 font-bold text-white shadow-xl shadow-blue-500/25 transition hover:-translate-y-1 hover:bg-blue-700"
-        >
-          {buttonText}
-          <ArrowRight size={18} className="transition group-hover:translate-x-1" />
+        <Link to={to} className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-white px-4 py-2 text-xs font-bold text-blue-600 shadow-sm transition hover:bg-blue-600 hover:text-white md:text-sm">
+          All <ArrowRight size={14} />
         </Link>
       </div>
 
-      <div className="relative grid md:grid-cols-4 gap-5">
-        {items.map((item, index) => (
-          <article
-            key={item.title}
-            className={`group reflection-card min-h-[360px] overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-2xl shadow-blue-950/10 transition duration-500 hover:-translate-y-2 ${
-              index === 0 ? "md:col-span-2 md:row-span-2 md:min-h-[520px]" : ""
-            }`}
-          >
-            <img
-              src={item.image}
-              alt={item.title}
-              className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-blue-300">
-                {item.tag}
-              </p>
-              <h3 className="mt-2 text-3xl md:text-4xl font-black leading-tight drop-shadow-lg">
-                {item.title}
-              </h3>
+      {/* Bento grid — fixed heights, no CSS grid rows conflict */}
+      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
+        {/* Big card — spans 2 cols */}
+        <Link to={to} className="group relative col-span-2 overflow-hidden rounded-2xl md:rounded-3xl" style={{ height: "340px" }}>
+          <img src={items[0].image} alt={items[0].title} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+            <p className="text-[10px] font-black uppercase tracking-widest text-blue-300 md:text-xs">{items[0].tag}</p>
+            <h3 className="mt-1 text-xl font-black text-white md:text-3xl">{items[0].title}</h3>
+          </div>
+        </Link>
+
+        {/* 3 small cards */}
+        {items.slice(1).map((item) => (
+          <Link to={to} key={item.title} className="group relative overflow-hidden rounded-2xl md:rounded-3xl" style={{ height: "160px" }}>
+            <img src={item.image} alt={item.title} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <p className="text-[9px] font-black uppercase tracking-widest text-blue-300">{item.tag}</p>
+              <h3 className="text-sm font-black text-white md:text-base">{item.title}</h3>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </section>
@@ -153,93 +106,94 @@ export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length);
-    }, 6000);
-
-    return () => clearInterval(timer);
+    const t = setInterval(() => setActiveSlide((c) => (c + 1) % heroSlides.length), 5000);
+    return () => clearInterval(t);
   }, []);
 
   const slide = heroSlides[activeSlide];
 
   return (
-    <main className="overflow-hidden bg-[radial-gradient(circle_at_top_left,#dbeafe_0,#f8fbff_32%,#ffffff_100%)]">
-      <section className="relative min-h-[82vh] px-4 py-10 md:py-16">
-        <div className="absolute inset-0 hero-grid opacity-60" />
-        <div className="absolute -top-24 right-10 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute bottom-10 left-0 h-72 w-72 rounded-full bg-sky-300/30 blur-3xl" />
+    <main className="bg-slate-50 pb-20 md:pb-0">
+      {/* Hero */}
+      <section className="relative h-[92vh] min-h-[560px] max-h-[900px] overflow-hidden">
+        {heroSlides.map((s, i) => (
+          <img
+            key={s.image}
+            src={s.image}
+            alt={s.title}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${i === activeSlide ? "opacity-100" : "opacity-0"}`}
+          />
+        ))}
+        <div className={`absolute inset-0 bg-gradient-to-br ${slide.accent} to-transparent transition-all duration-1000`} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
 
-        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-center min-h-[72vh]">
-          <div className="z-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-bold text-blue-700 shadow-lg shadow-blue-500/10 backdrop-blur">
-              <Sparkles size={16} />
-              Women’s Styles Premium Store
+        {/* Hero content */}
+        <div className="relative flex h-full flex-col justify-end px-5 pb-16 md:justify-center md:px-12 md:pb-0">
+          <div className="max-w-lg">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur">
+              <Sparkles size={11} /> Women's Styles • Premium Store
             </div>
+            <p className="mb-1 text-xs font-black uppercase tracking-[0.4em] text-blue-300">{slide.tag}</p>
+            <h1 className="text-3xl font-black leading-[1.1] text-white md:text-5xl lg:text-6xl">{slide.title}</h1>
+            <p className="mt-3 text-sm leading-relaxed text-white/70 md:text-base">{slide.text}</p>
 
-            <p className="mt-8 text-blue-600 font-black uppercase tracking-[0.35em] text-xs">
-              {slide.tag}
-            </p>
-            <h1 className="mt-4 max-w-3xl text-5xl md:text-7xl font-black leading-[0.95] text-slate-950">
-              {slide.title}
-            </h1>
-            <p className="mt-6 max-w-xl text-lg text-slate-600 leading-8">
-              {slide.text}
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                to="/dress"
-                className="rounded-full bg-blue-600 px-8 py-4 font-bold text-white shadow-2xl shadow-blue-500/30 transition hover:-translate-y-1 hover:bg-blue-700"
-              >
-                Explore Dress
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              <Link to="/dress" className="flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-700/40 transition hover:bg-blue-500">
+                <ShoppingBag size={15} /> Shop Dress
               </Link>
-              <Link
-                to="/jewellery"
-                className="rounded-full border border-blue-200 bg-white/80 px-8 py-4 font-bold text-blue-700 shadow-xl shadow-blue-500/10 backdrop-blur transition hover:-translate-y-1 hover:border-blue-500"
-              >
-                Explore Jewellery
+              <Link to="/jewellery" className="flex items-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20">
+                <Star size={15} /> Jewellery
               </Link>
-            </div>
-          </div>
-
-          <div className="relative h-[520px] lg:h-[620px]">
-            <div className="absolute inset-0 rounded-[3rem] bg-blue-600/20 blur-3xl" />
-            <div className="reflection-card hero-slide-card absolute inset-0 overflow-hidden rounded-[3rem] border border-white/70 bg-white/40 shadow-2xl shadow-blue-950/20 backdrop-blur">
-              <img
-                key={slide.image}
-                src={slide.image}
-                alt={slide.title}
-                className="h-full w-full object-cover hero-slide-image"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
-              <div className="absolute bottom-8 left-8 right-8 rounded-[2rem] border border-white/30 bg-white/15 p-6 text-white backdrop-blur-xl">
-                {/* <p className="text-sm font-bold uppercase tracking-[0.25em] text-blue-200">
-                  Slide 0{activeSlide + 1}
-                </p> */}
-                <h2 className="mt-2 text-3xl md:text-5xl font-black">{slide.tag}</h2>
-              </div>
             </div>
           </div>
         </div>
+
+        {/* Slide indicators */}
+        <div className="absolute bottom-6 right-5 flex gap-1.5 md:bottom-8 md:right-10">
+          {heroSlides.map((_, i) => (
+            <button key={i} onClick={() => setActiveSlide(i)} className={`rounded-full transition-all duration-300 ${i === activeSlide ? "h-2 w-8 bg-white" : "h-2 w-2 bg-white/40"}`} />
+          ))}
+        </div>
+
+        {/* Slide counter */}
+        <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 flex-col items-center gap-2 md:flex">
+          <span className="text-2xl font-black text-white">{String(activeSlide + 1).padStart(2, "0")}</span>
+          <div className="h-12 w-px bg-white/30" />
+          <span className="text-sm font-bold text-white/40">{String(heroSlides.length).padStart(2, "0")}</span>
+        </div>
       </section>
 
-      <CollectionSection
-        eyebrow="Dress Collection"
-        title="Modern women’s dress collections"
-        subtitle="These home page collection images are design images only. Your actual product images will show on the Dress product page when you add products from admin."
-        items={dressCollection}
-        buttonText="Explore More Dress Collection"
-        to="/dress"
-      />
+      {/* Stats strip */}
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-around px-4 py-3 md:py-4">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <p className="text-base font-black text-blue-600 md:text-xl">{s.value}</p>
+              <p className="text-[10px] font-semibold text-slate-500 md:text-xs">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <CollectionSection
-        eyebrow="Jewellery Collection"
-        title="Blue-white glowing jewellery picks"
-        subtitle="Jewellery page product cards will automatically show the images you upload from admin product management."
-        items={jewelleryCollection}
-        buttonText="Explore More Jewels"
-        to="/jewellery"
-      />
+      <CollectionSection eyebrow="Dress Collection" title="Modern women's dress" items={dressCollection} buttonText="All Dress" to="/dress" />
+
+      {/* Banner */}
+      <div className="mx-auto max-w-7xl px-4 pb-4">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 shadow-2xl md:rounded-[2rem] md:p-10">
+          <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+          <div className="absolute -bottom-8 left-20 h-32 w-32 rounded-full bg-pink-500/20 blur-2xl" />
+          <div className="relative max-w-sm">
+            <span className="rounded-full bg-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">New Arrivals</span>
+            <h2 className="mt-3 text-2xl font-black text-white md:text-4xl">Exclusive jewellery collection</h2>
+            <p className="mt-2 text-sm text-blue-100">Hand-picked pieces for every occasion.</p>
+            <Link to="/jewellery" className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-blue-700 shadow-lg transition hover:bg-blue-50">
+              Explore <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <CollectionSection eyebrow="Jewellery Collection" title="Glowing jewellery picks" items={jewelleryCollection} buttonText="All Jewels" to="/jewellery" />
     </main>
   );
 }

@@ -25,12 +25,12 @@ export default function AdminOrders() {
       <div className="grid gap-4">
         {orders.map((order) => (
           <div key={order._id} className="rounded-3xl bg-white p-5 shadow">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-bold text-blue-950">{order.user?.name || "User"}</h3>
                 <p className="text-slate-600">₹{order.amount} • {order.paymentMethod}</p>
               </div>
-              <select value={order.orderStatus} onChange={(event) => updateStatus(order._id, event.target.value)} className="input max-w-xs">
+              <select value={order.orderStatus} onChange={(event) => updateStatus(order._id, event.target.value)} className="input w-full sm:max-w-xs">
                 {statuses.map((status) => <option key={status}>{status}</option>)}
               </select>
             </div>

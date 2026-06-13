@@ -1,74 +1,64 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, PackageCheck, Phone, User } from "lucide-react";
+import { LogOut, PackageCheck, Phone, User, ChevronRight, Heart, ShoppingBag } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleOrders = () => {
-    navigate("/orders");
-  };
+  const menuItems = [
+    { icon: PackageCheck, label: "My Orders", sub: "Track your orders", action: () => navigate("/orders"), color: "bg-blue-50 text-blue-600" },
+    { icon: Heart, label: "Favourites", sub: "Saved items", action: () => navigate("/favourites"), color: "bg-pink-50 text-pink-500" },
+    { icon: ShoppingBag, label: "Cart", sub: "Items in bag", action: () => navigate("/cart"), color: "bg-indigo-50 text-indigo-600" },
+  ];
 
   return (
-    <section className="min-h-[70vh] bg-gradient-to-br from-blue-50 via-white to-pink-50 px-4 py-14">
-      <div className="mx-auto max-w-4xl">
-        <div className="overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-blue-100">
-          <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-pink-500 p-8 text-white">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/20 ring-4 ring-white/30 backdrop-blur">
-                <User size={44} />
-              </div>
-
-              <div>
-                <h1 className="text-4xl font-black">My Profile</h1>
-                <p className="mt-2 text-white/80">
-                  Manage your account and orders
-                </p>
-              </div>
-            </div>
+    <section className="min-h-screen bg-slate-50 pb-24 md:pb-10">
+      {/* Header banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 px-4 pb-16 pt-8">
+        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute -bottom-6 left-10 h-28 w-28 rounded-full bg-pink-500/20 blur-xl" />
+        <div className="relative mx-auto max-w-lg text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white/20 backdrop-blur ring-4 ring-white/30">
+            <User className="h-10 w-10 text-white" />
           </div>
+          <h1 className="mt-3 text-2xl font-black text-white">{user?.name || "User"}</h1>
+          <p className="mt-1 text-sm text-blue-200">Women's Styles Member</p>
+        </div>
+      </div>
 
-          <div className="grid gap-6 p-8 md:grid-cols-2">
-            <div className="rounded-3xl border border-blue-100 bg-blue-50 p-6">
-              <p className="text-sm font-bold uppercase tracking-widest text-blue-500">
-                Customer Name
-              </p>
-              <h2 className="mt-2 text-2xl font-black text-blue-950">
-                {user?.name || "User"}
-              </h2>
-            </div>
-
-            <div className="rounded-3xl border border-blue-100 bg-pink-50 p-6">
-              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-pink-500">
-                <Phone size={17} />
-                Phone Number
-              </p>
-              <h2 className="mt-2 text-2xl font-black text-blue-950">
-                {user?.phone || "Not available"}
-              </h2>
-            </div>
+      <div className="mx-auto max-w-lg px-4">
+        {/* Info cards */}
+        <div className="-mt-8 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200/80">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Name</p>
+            <p className="mt-1 truncate text-sm font-black text-slate-900">{user?.name || "—"}</p>
           </div>
-
-          <div className="flex flex-col gap-4 px-8 pb-8 sm:flex-row">
-            <button
-              onClick={handleOrders}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-4 font-bold text-white shadow-xl shadow-blue-200 transition hover:-translate-y-1 hover:bg-blue-700"
-            >
-              <PackageCheck size={20} />
-              My Orders
-            </button>
-
-            <button
-              onClick={logout}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-red-500 px-6 py-4 font-bold text-white shadow-xl shadow-red-100 transition hover:-translate-y-1 hover:bg-red-600"
-            >
-              <LogOut size={20} />
-              Logout
-            </button>
+          <div className="rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200/80">
+            <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400"><Phone className="h-3 w-3" /> Phone</p>
+            <p className="mt-1 truncate text-sm font-black text-slate-900">{user?.phone || "—"}</p>
           </div>
         </div>
+
+        {/* Menu items */}
+        <div className="mt-4 space-y-2">
+          {menuItems.map(({ icon: Icon, label, sub, action, color }) => (
+            <button key={label} onClick={action} className="flex w-full items-center gap-4 rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/80 transition hover:ring-blue-200">
+              <div className={`rounded-xl p-2.5 ${color}`}><Icon className="h-5 w-5" /></div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-black text-slate-900">{label}</p>
+                <p className="text-xs text-slate-400">{sub}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-slate-300" />
+            </button>
+          ))}
+        </div>
+
+        {/* Logout */}
+        <button onClick={logout} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-red-50 py-4 text-sm font-black text-red-500 ring-1 ring-red-100 transition hover:bg-red-100">
+          <LogOut className="h-4 w-4" /> Logout
+        </button>
       </div>
     </section>
   );

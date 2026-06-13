@@ -10,4 +10,5 @@ export default function Layout({ children }) {
       <Footer />
     </>
   );
+  // bottom-nav padding handled per page with pb-24 md:pb-0
 }
