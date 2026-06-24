@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Eye, Lock, Phone, Sparkles, User, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, Phone, Sparkles, User, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Auth({ registerMode = false }) {
   const [isRegister, setIsRegister] = useState(registerMode);
   const [form, setForm] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
@@ -137,12 +138,14 @@ export default function Auth({ registerMode = false }) {
               <input
                 name="password"
                 onChange={handleChange}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className="w-full rounded-2xl border border-blue-100 bg-blue-50/60 py-4 pl-12 pr-12 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 required
               />
-              <Eye className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500">
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
           </div>
 

@@ -7,36 +7,41 @@ const heroSlides = [
     tag: "Premium Ethnic Wear",
     title: "Blue elegance for every beautiful moment",
     text: "Explore fresh dress styles with soft glow and modern shopping feel.",
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.pexels.com/photos/1462637/pexels-photo-1462637.jpeg?auto=compress&cs=tinysrgb&w=1600",
     accent: "from-blue-900/90 via-blue-800/60",
+    desktopStyle: { objectFit: "cover", objectPosition: "center 20%" },
   },
   {
     tag: "Jewellery Glow",
     title: "Shine brighter with classy jewellery picks",
     text: "Modern jewellery collections with rich reflections and luxury styling.",
-    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=90",
     accent: "from-slate-900/90 via-pink-900/40",
+    desktopStyle: { objectFit: "cover", objectPosition: "center center" },
   },
   {
     tag: "New Collection",
     title: "Trendy dresses made for daily confidence",
     text: "Simple, stylish layouts for a professional store look.",
-    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1600",
     accent: "from-slate-950/90 via-blue-950/50",
+    desktopStyle: { objectFit: "cover", objectPosition: "center 15%" },
   },
-  {
-    tag: "Festive Mood",
-    title: "Soft festive looks with premium feel",
-    text: "Give your customers a clean shopping experience.",
-    image: "https://images.unsplash.com/photo-1622122201714-77da0ca8e5d2?auto=format&fit=crop&w=1200&q=80",
-    accent: "from-pink-950/80 via-slate-900/60",
-  },
+  // {
+  //   tag: "Festive Mood",
+  //   title: "Soft festive looks with premium feel",
+  //   text: "Give your customers a clean shopping experience.",
+  //   image: "https://images.pexels.com/photos/1755428/pexels-photo-1755428.jpeg?auto=compress&cs=tinysrgb&w=1600",
+  //   accent: "from-pink-950/80 via-slate-900/60",
+  //   desktopStyle: { objectFit: "cover", objectPosition: "center 10%" },
+  // },
   {
     tag: "Modern Accessories",
     title: "Complete your style with glowing details",
     text: "Beautiful slides, collection cards, and smooth effects.",
-    image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=scale&w=1600&q=90",
     accent: "from-blue-950/90 via-slate-900/50",
+    desktopStyle: { objectFit: "cover", objectPosition: "center 15%" },
   },
 ];
 
@@ -61,7 +66,23 @@ const stats = [
   { value: "Free", label: "Delivery" },
 ];
 
-function CollectionSection({ eyebrow, title, items, buttonText, to }) {
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const handler = (e) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isDesktop;
+}
+
+function CollectionSection({ eyebrow, title, items, to }) {
+  const isDesktop = useIsDesktop();
+  const bigCardHeight = isDesktop ? "500px" : "340px";
+  const smallCardHeight = isDesktop ? "240px" : "160px";
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
       <div className="mb-5 flex items-end justify-between">
@@ -74,10 +95,13 @@ function CollectionSection({ eyebrow, title, items, buttonText, to }) {
         </Link>
       </div>
 
-      {/* Bento grid — fixed heights, no CSS grid rows conflict */}
-      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
-        {/* Big card — spans 2 cols */}
-        <Link to={to} className="group relative col-span-2 overflow-hidden rounded-2xl md:rounded-3xl" style={{ height: "340px" }}>
+      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:grid-rows-2 md:gap-4">
+        {/* Big card — spans 2 cols + 2 rows on desktop */}
+        <Link
+          to={to}
+          className="group relative col-span-2 row-span-1 overflow-hidden rounded-2xl md:row-span-2 md:rounded-3xl"
+          style={{ height: bigCardHeight }}
+        >
           <img src={items[0].image} alt={items[0].title} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
@@ -88,7 +112,12 @@ function CollectionSection({ eyebrow, title, items, buttonText, to }) {
 
         {/* 3 small cards */}
         {items.slice(1).map((item) => (
-          <Link to={to} key={item.title} className="group relative overflow-hidden rounded-2xl md:rounded-3xl" style={{ height: "160px" }}>
+          <Link
+            to={to}
+            key={item.title}
+            className="group relative overflow-hidden rounded-2xl md:rounded-3xl"
+            style={{ height: smallCardHeight }}
+          >
             <img src={item.image} alt={item.title} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -113,23 +142,23 @@ export default function Home() {
   const slide = heroSlides[activeSlide];
 
   return (
-    <main className="bg-slate-50 pb-20 md:pb-0">
-      {/* Hero */}
-      <section className="relative h-[92vh] min-h-[560px] max-h-[900px] overflow-hidden">
+    <main className="bg-slate-50 pb-20 md:pb-16">
+      {/* Hero — mobile: 92vh, desktop: full screen */}
+      <section className="relative h-[92vh] min-h-[560px] md:h-screen overflow-hidden">
         {heroSlides.map((s, i) => (
           <img
             key={s.image}
             src={s.image}
             alt={s.title}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${i === activeSlide ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 h-full w-full object-cover object-center md:${s.desktopPos} transition-opacity duration-1000 ${i === activeSlide ? "opacity-100" : "opacity-0"}`}
           />
         ))}
         <div className={`absolute inset-0 bg-gradient-to-br ${slide.accent} to-transparent transition-all duration-1000`} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
 
         {/* Hero content */}
-        <div className="relative flex h-full flex-col justify-end px-5 pb-16 md:justify-center md:px-12 md:pb-0">
-          <div className="max-w-lg">
+        <div className="relative flex h-full flex-col justify-end px-5 pb-16 md:justify-center md:px-16 md:pb-0">
+          <div className="max-w-xl">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur">
               <Sparkles size={11} /> Women's Styles • Premium Store
             </div>
@@ -175,10 +204,10 @@ export default function Home() {
         </div>
       </div>
 
-      <CollectionSection eyebrow="Dress Collection" title="Modern women's dress" items={dressCollection} buttonText="All Dress" to="/dress" />
+      <CollectionSection eyebrow="Dress Collection" title="Modern women's dress" items={dressCollection} to="/dress" />
 
       {/* Banner */}
-      <div className="mx-auto max-w-7xl px-4 pb-4">
+      <div className="mx-auto max-w-7xl px-4 py-4 md:py-8">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 shadow-2xl md:rounded-[2rem] md:p-10">
           <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute -bottom-8 left-20 h-32 w-32 rounded-full bg-pink-500/20 blur-2xl" />
@@ -193,7 +222,7 @@ export default function Home() {
         </div>
       </div>
 
-      <CollectionSection eyebrow="Jewellery Collection" title="Glowing jewellery picks" items={jewelleryCollection} buttonText="All Jewels" to="/jewellery" />
+      <CollectionSection eyebrow="Jewellery Collection" title="Glowing jewellery picks" items={jewelleryCollection} to="/jewellery" />
     </main>
   );
 }

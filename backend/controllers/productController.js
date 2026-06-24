@@ -61,6 +61,10 @@ exports.getProducts = async (req, res) => {
       query.mainCategory = req.query.category;
     }
 
+    if (req.query.subCategory) {
+      query.subCategory = req.query.subCategory;
+    }
+
     if (req.query.search) {
       query.name = { $regex: req.query.search, $options: "i" };
     }
