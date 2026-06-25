@@ -56,7 +56,7 @@ export default function AdminProducts() {
     if (!filterCat) return [];
     return [...new Set(
       items
-        .filter((p) => p.mainCategory?.toLowerCase() === filterCat.toLowerCase())
+        .filter((p) => filterCat === "Jewellery" ? p.mainCategory?.toLowerCase().includes("jewellery") : p.mainCategory?.toLowerCase().includes("dress"))
         .map((p) => p.subCategory)
         .filter(Boolean)
     )];
@@ -64,7 +64,11 @@ export default function AdminProducts() {
 
   const filtered = useMemo(() => items.filter((p) => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
-    const matchCat = filterCat ? p.mainCategory?.toLowerCase() === filterCat.toLowerCase() : true;
+    const matchCat = filterCat
+      ? filterCat === "Jewellery"
+        ? p.mainCategory?.toLowerCase().includes("jewellery")
+        : p.mainCategory?.toLowerCase().includes("dress")
+      : true;
     const matchSub = filterSub ? p.subCategory?.toLowerCase() === filterSub.toLowerCase() : true;
     return matchSearch && matchCat && matchSub;
   }), [items, search, filterCat, filterSub]);
