@@ -31,15 +31,28 @@ function CancelModal({ order, onClose, onSuccess }) {
 
   const submit = async () => {
     const finalReason = reason === "Other" ? custom.trim() : reason;
-    if (!finalReason) return setErr("Please select or enter a reason.");
+    if (!finalReason) return setErr("Please select a reason first.");
     setLoading(true);
     setErr("");
     try {
-      await api.put(`/orders/${order._id}/cancel`, { reason: finalReason });
+      // use order._id or order.id — whichever exists
+      const orderId = order._id || order.id;
+      await api.put(`/orders/${orderId}/cancel`, { reason: finalReason });
       onSuccess();
     } catch (e) {
-      const msg = e.response?.data?.message || e.message || "Failed to cancel order.";
-      setErr(msg);
+      const status = e.response?.status;
+      const serverMsg = e.response?.data?.message;
+      if (status === 404) {
+        setErr("Order not found. Please refresh and try again.");
+      } else if (status === 403) {
+        setErr("You are not authorized to cancel this order.");
+      } else if (status === 401) {
+        setErr("Session expired. Please login again.");
+      } else if (status === 400) {
+        setErr(serverMsg || "This order cannot be cancelled now.");
+      } else {
+        setErr(serverMsg || "Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -90,7 +103,17 @@ function CancelModal({ order, onClose, onSuccess }) {
           />
         )}
 
-        {err && <p className="mt-2 text-xs font-bold text-red-500">{err}</p>}
+        {err && (
+          <div className="mt-3 flex items-start justify-between gap-2 rounded-xl bg-red-50 px-3 py-2.5 ring-1 ring-red-100">
+            <p className="text-xs font-bold text-red-600">{err}</p>
+            <button
+              onClick={() => setErr("")}
+              className="shrink-0 text-red-400 hover:text-red-600"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
 
         <div className="mt-4 flex gap-2">
           <button onClick={onClose} className="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-black text-slate-600 hover:bg-slate-200">

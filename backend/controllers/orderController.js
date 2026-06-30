@@ -17,20 +17,26 @@ exports.myOrders=async(req,res)=>
 exports.cancelOrder=async(req,res)=>{
   try{
     if(!req.user) return res.status(401).json({message:'Not authorized. Please login again.'});
+    const mongoose=require('mongoose');
+    if(!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(404).json({message:'Order not found'});
     const order=await Order.findById(req.params.id);
     if(!order) return res.status(404).json({message:'Order not found'});
     if(order.user.toString()!==req.user._id.toString())
       return res.status(403).json({message:'Not authorized to cancel this order'});
     const nonCancellable=['Shipped','Out for Delivery','Delivered','Cancelled'];
     if(nonCancellable.includes(order.orderStatus))
-      return res.status(400).json({message:'Order cannot be cancelled at this stage'});
+      return res.status(400).json({message:'This order cannot be cancelled at this stage'});
     order.orderStatus='Cancelled';
     order.deliveryStatus='Cancelled';
     order.cancelReason=req.body.reason||'Cancelled by user';
     order.cancelledByAdmin=false;
     await order.save();
     res.json(order);
-  }catch(e){res.status(500).json({message:e.message})}
+  }catch(e){
+    console.error('cancelOrder error:',e.message);
+    res.status(500).json({message:e.message});
+  }
 };
 
 exports.adminOrders=async(req,res)=>
