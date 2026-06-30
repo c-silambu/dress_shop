@@ -1,52 +1,146 @@
 import React, { useEffect, useState } from "react";
+import { Users, Search, Mail, Phone, Calendar, Sparkles } from "lucide-react";
 import api from "../../api/api";
+
+function getInitials(name = "") {
+  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "?";
+}
+
+const AVATAR_GRADS = [
+  "from-violet-500 to-purple-600",
+  "from-rose-500 to-pink-600",
+  "from-blue-500 to-cyan-500",
+  "from-emerald-500 to-teal-500",
+  "from-amber-500 to-orange-500",
+  "from-indigo-500 to-violet-500",
+];
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/admin/users").then((response) => setUsers(response.data));
+    api.get("/admin/users")
+      .then((r) => setUsers(r.data))
+      .finally(() => setLoading(false));
   }, []);
 
+  const filtered = users.filter((u) => {
+    const q = search.toLowerCase();
+    return !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q) || u.phone?.toLowerCase().includes(q);
+  });
+
+  const glassCard = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(20px)" };
+
   return (
-    <>
-      <h1 className="mb-6 text-4xl font-black text-blue-900">Users</h1>
+    <div className="space-y-5 pb-24 lg:pb-8">
 
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-3xl bg-white shadow md:block">
-        <table className="w-full">
-          <thead className="bg-blue-100 text-left text-blue-900">
-            <tr>
-              <th className="p-4">Name</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Phone</th>
-              <th className="p-4">Joined</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id} className="border-t border-blue-50">
-                <td className="p-4">{user.name}</td>
-                <td className="p-4">{user.email}</td>
-                <td className="p-4">{user.phone}</td>
-                <td className="p-4">{new Date(user.createdAt).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="grid gap-4 md:hidden">
-        {users.map((user) => (
-          <div key={user._id} className="rounded-3xl border border-blue-100 bg-white p-4 shadow">
-            <p className="text-lg font-black text-blue-950">{user.name}</p>
-            <p className="mt-1 text-sm text-slate-600">{user.email}</p>
-            <p className="mt-1 text-sm text-slate-600">{user.phone}</p>
-            <p className="mt-1 text-xs text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</p>
+      {/* Header */}
+      <div className="flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between" style={{ background: "linear-gradient(135deg,rgba(244,63,94,0.2),rgba(168,85,247,0.1))", border: "1px solid rgba(244,63,94,0.25)" }}>
+        <div>
+          <div className="mb-1 inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ background: "rgba(244,63,94,0.15)", border: "1px solid rgba(244,63,94,0.25)" }}>
+            <Sparkles className="h-3 w-3 text-rose-400" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400">Customer Management</span>
           </div>
-        ))}
+          <h1 className="text-2xl font-black text-white tracking-tight sm:text-3xl">Users</h1>
+          <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{users.length} registered customers</p>
+        </div>
       </div>
-    </>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+        <input
+          className="w-full rounded-2xl py-3.5 pl-11 pr-4 text-sm font-bold text-white outline-none"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          placeholder="Search by name, email or phone…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Desktop Table */}
+      {loading ? (
+        <div className="space-y-2">
+          {[1,2,3,4,5].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl" style={{ background: "rgba(255,255,255,0.04)" }} />)}
+        </div>
+      ) : !filtered.length ? (
+        <div className="py-16 text-center">
+          <Users className="mx-auto h-12 w-12 text-white/10" />
+          <p className="mt-3 font-black" style={{ color: "rgba(255,255,255,0.2)" }}>No users found</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop */}
+          <div className="hidden overflow-hidden rounded-3xl md:block" style={glassCard}>
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  {["Customer","Email","Phone","Joined"].map((h) => (
+                    <th key={h} className="px-5 py-4 text-left text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.35)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((user, idx) => (
+                  <tr key={user._id} className="transition hover:bg-white/5" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${AVATAR_GRADS[idx % AVATAR_GRADS.length]} text-sm font-black text-white`}>
+                          {getInitials(user.name)}
+                        </div>
+                        <span className="text-sm font-black text-white">{user.name || "—"}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>{user.email || "—"}</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>{user.phone || "—"}</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        {new Date(user.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="space-y-2.5 md:hidden">
+            {filtered.map((user, idx) => (
+              <div key={user._id} className="flex items-center gap-4 rounded-2xl p-4" style={glassCard}>
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${AVATAR_GRADS[idx % AVATAR_GRADS.length]} text-base font-black text-white`}>
+                  {getInitials(user.name)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-black text-white">{user.name || "—"}</p>
+                  <div className="mt-1 space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      <Mail className="h-3 w-3 text-rose-400 shrink-0" />
+                      <span className="truncate">{user.email || "—"}</span>
+                    </div>
+                    {user.phone && (
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        <Phone className="h-3 w-3 text-violet-400 shrink-0" />
+                        <span>{user.phone}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      <Calendar className="h-3 w-3 shrink-0" />
+                      <span>{new Date(user.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
