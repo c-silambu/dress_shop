@@ -33,11 +33,13 @@ function CancelModal({ order, onClose, onSuccess }) {
     const finalReason = reason === "Other" ? custom.trim() : reason;
     if (!finalReason) return setErr("Please select or enter a reason.");
     setLoading(true);
+    setErr("");
     try {
       await api.put(`/orders/${order._id}/cancel`, { reason: finalReason });
       onSuccess();
     } catch (e) {
-      setErr(e.response?.data?.message || "Failed to cancel order.");
+      const msg = e.response?.data?.message || e.message || "Failed to cancel order.";
+      setErr(msg);
     } finally {
       setLoading(false);
     }
