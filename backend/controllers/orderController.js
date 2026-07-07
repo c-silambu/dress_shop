@@ -11,12 +11,27 @@ exports.create=async(req,res)=>{
   }catch(e){res.status(500).json({message:e.message})}
 };
 
-exports.myOrders=async(req,res)=>
-  res.json(await Order.find({user:req.user._id}).populate('items.product').sort('-createdAt'));
+exports.myOrders=async(req,res)=>{
+  try{
+    const orders=await Order.find({user:req.user._id}).lean().sort('-createdAt');
+    // convert _id and user ObjectIds to strings for clean JSON
+    const result=orders.map(o=>({
+      ...o,
+      _id:o._id.toString(),
+      user:o.user?.toString(),
+      items:(o.items||[]).map(item=>({
+        ...item,
+        _id:item._id?.toString(),
+        product:item.product?.toString(),
+      })),
+    }));
+    res.json(result);
+  }catch(e){res.status(500).json({message:e.message})}
+};
 
 exports.cancelOrder=async(req,res)=>{
   try{
-    if(!req.user) return res.status(401).json({message:'Not authorized. Please login again.'});
+    if(!req.user?._id) return res.status(401).json({message:'Not authorized. Please login again.'});
     const mongoose=require('mongoose');
     if(!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(404).json({message:'Order not found'});

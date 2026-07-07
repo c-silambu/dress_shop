@@ -32,18 +32,20 @@ function CancelModal({ order, onClose, onSuccess }) {
   const submit = async () => {
     const finalReason = reason === "Other" ? custom.trim() : reason;
     if (!finalReason) return setErr("Please select a reason first.");
+
+    const orderId = order._id?.toString() || order.id?.toString();
+    if (!orderId) return setErr("Invalid order. Please refresh the page and try again.");
+
     setLoading(true);
     setErr("");
     try {
-      // use order._id or order.id — whichever exists
-      const orderId = order._id || order.id;
       await api.put(`/orders/${orderId}/cancel`, { reason: finalReason });
       onSuccess();
     } catch (e) {
       const status = e.response?.status;
       const serverMsg = e.response?.data?.message;
       if (status === 404) {
-        setErr("Order not found. Please refresh and try again.");
+        setErr("Order not found. Please refresh the page and try again.");
       } else if (status === 403) {
         setErr("You are not authorized to cancel this order.");
       } else if (status === 401) {
