@@ -12,6 +12,22 @@ const restockOrderItems=async(items=[])=>{
   }
 };
 
+const findUserOrderByDisplayId=async(rawId,userId)=>{
+  const id=String(rawId||'').replace(/^#/,'').trim().toLowerCase();
+  if(!id) return null;
+
+  const orders=await Order.find({user:userId}).sort('-createdAt');
+  const exact=orders.find((order)=>order._id.toString().toLowerCase()===id);
+  if(exact) return exact;
+  if(id.length<6) return null;
+
+  const matches=orders.filter((order)=>{
+    const fullId=order._id.toString().toLowerCase();
+    return fullId.endsWith(id)||fullId.startsWith(id);
+  });
+  return matches.length===1?matches[0]:null;
+};
+
 exports.create=async(req,res)=>{
   try{
     const order=await Order.create({...req.body,user:req.user._id});
@@ -42,12 +58,23 @@ exports.myOrders=async(req,res)=>{
 exports.cancelOrder=async(req,res)=>{
   try{
     if(!req.user?._id) return res.status(401).json({message:'Not authorized. Please login again.'});
-    if(!mongoose.Types.ObjectId.isValid(req.params.id))
-      return res.status(404).json({message:'Order not found'});
-    const order=await Order.findById(req.params.id);
-    if(!order) return res.status(404).json({message:'Order not found'});
-    if(order.user.toString()!==req.user._id.toString())
+    const requestedId=String(req.params.id||'').replace(/^#/,'').trim();
+    let order=null;
+
+    if(mongoose.Types.ObjectId.isValid(requestedId)){
+      order=await Order.findById(requestedId);
+    }
+
+    if(order&&order.user.toString()!==req.user._id.toString())
       return res.status(403).json({message:'Not authorized to cancel this order'});
+
+    if(!order){
+      order=await findUserOrderByDisplayId(requestedId,req.user._id);
+    }
+
+    if(!order)
+      return res.status(404).json({message:'Order not found. Please refresh your orders and try again.'});
+
     const nonCancellable=['Shipped','Out for Delivery','Delivered','Cancelled'];
     if(nonCancellable.includes(order.orderStatus))
       return res.status(400).json({message:'This order cannot be cancelled at this stage'});
