@@ -72,7 +72,7 @@ export default function ProductList({ category }) {
   }, [items, search, subCategory]);
 
   return (
-    <section className="page-shell">
+    <section className="page-shell" mb-20>
       <div className="border-b border-[#e9e0d7] bg-white">
         <div className="section-wrap py-10 text-center md:py-16">
           <p className="editorial-kicker">Women's Styles</p>
