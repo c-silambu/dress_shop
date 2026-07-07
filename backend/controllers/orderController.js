@@ -1,6 +1,16 @@
 const Order=require('../models/Order');
 const Product=require('../models/Product');
 const User=require('../models/User');
+const mongoose=require('mongoose');
+
+const restockOrderItems=async(items=[])=>{
+  for(const item of items){
+    const productId=item.product?.toString();
+    const quantity=Number(item.quantity||0);
+    if(!productId||!mongoose.Types.ObjectId.isValid(productId)||quantity<=0) continue;
+    await Product.findByIdAndUpdate(productId,{$inc:{stock:quantity}});
+  }
+};
 
 exports.create=async(req,res)=>{
   try{
@@ -32,7 +42,6 @@ exports.myOrders=async(req,res)=>{
 exports.cancelOrder=async(req,res)=>{
   try{
     if(!req.user?._id) return res.status(401).json({message:'Not authorized. Please login again.'});
-    const mongoose=require('mongoose');
     if(!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(404).json({message:'Order not found'});
     const order=await Order.findById(req.params.id);
@@ -47,6 +56,11 @@ exports.cancelOrder=async(req,res)=>{
     order.cancelReason=req.body.reason||'Cancelled by user';
     order.cancelledByAdmin=false;
     await order.save();
+    try{
+      await restockOrderItems(order.items);
+    }catch(restockError){
+      console.error('restockOrderItems error:',restockError.message);
+    }
     res.json(order);
   }catch(e){
     console.error('cancelOrder error:',e.message);
