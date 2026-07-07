@@ -10,9 +10,15 @@ export default function Favourites() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-7xl p-4 py-10">
-      <h1 className="mb-6 text-4xl font-black text-blue-900">Favourites</h1>
-      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+    <section className="page-shell">
+      <div className="border-b border-[#e9e0d7] bg-white">
+        <div className="section-wrap py-10 md:py-14">
+          <p className="editorial-kicker">Wishlist</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-[#15120f] md:text-5xl">Favourites</h1>
+          <p className="mt-2 text-sm text-[#756f66]">{items.length} saved item{items.length !== 1 ? "s" : ""}</p>
+        </div>
+      </div>
+      <div className="section-wrap grid grid-cols-2 gap-x-4 gap-y-10 py-8 md:grid-cols-3 md:gap-x-8 lg:grid-cols-4">
         {items.map((item) => item.product && <ProductCard key={item._id} p={item.product} />)}
       </div>
     </section>

@@ -66,7 +66,7 @@ export default function Checkout() {
         order_id: order.id,
         handler: async (res) => { try { await api.post("/payment/verify", res); resolve(true); } catch { resolve(false); } },
         prefill: { name: address.fullName || user?.name, contact: address.phone || user?.phone, email: user?.email },
-        theme: { color: "#2563eb" },
+        theme: { color: "#a91d4b" },
         modal: { ondismiss: () => resolve(false) },
       });
       rp.open();
@@ -97,34 +97,33 @@ export default function Checkout() {
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-3 py-6 md:px-4 md:py-10">
-      <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-blue-600">Secure Checkout</p>
-        <h1 className="text-2xl font-black text-blue-950 md:text-5xl">Place Your Order</h1>
+    <section className="page-shell">
+      <div className="border-b border-[#e9e0d7] bg-white">
+        <div className="section-wrap py-8 md:py-10">
+          <p className="editorial-kicker">Secure Checkout</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-[#15120f] md:text-5xl">Place your order</h1>
+        </div>
       </div>
 
-      <form onSubmit={placeOrder} className="grid gap-5 lg:grid-cols-[1fr_390px]">
-        <div className="space-y-4">
-          {/* Products */}
-          <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-lg md:rounded-[2rem] md:p-5">
-            <h2 className="mb-3 text-lg font-black text-slate-950 md:text-2xl">Products</h2>
-            <div className="grid gap-3">
+      <form onSubmit={placeOrder} className="section-wrap grid gap-8 py-6 md:py-10 lg:grid-cols-[1fr_430px]">
+        <div className="space-y-5">
+          <div className="fashion-panel p-5 md:p-6">
+            <h2 className="text-2xl font-black text-[#15120f]">Products</h2>
+            <div className="mt-5 grid gap-3">
               {checkoutItems.map((item) => {
                 const product = item.product;
                 const itemPrice = Number(product?.discountPrice || product?.price || 0);
                 return (
-                  <div key={product?._id || item._id} className="flex gap-3 rounded-xl bg-blue-50/60 p-3 md:rounded-[1.6rem] md:p-4">
-                    <img src={imgUrl(product?.images?.[0])} alt={product?.name} className="h-20 w-20 flex-shrink-0 rounded-xl object-cover md:h-28 md:w-28 md:rounded-2xl" />
-                    <div className="flex flex-1 flex-col justify-between">
-                      <div>
-                        <h3 className="text-sm font-black text-slate-950 md:text-xl">{product?.name}</h3>
-                        <p className="mt-0.5 text-sm font-bold text-blue-700">₹{itemPrice}</p>
-                        <p className="text-xs text-slate-500">{product?.subCategory || product?.mainCategory}</p>
-                      </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <button type="button" className="rounded-full bg-white p-2 text-blue-700" onClick={() => updateCartQuantity(item, Number(item.quantity || 1) - 1)}><Minus className="h-3 w-3" /></button>
-                        <span className="min-w-6 text-center text-sm font-black">{item.quantity || 1}</span>
-                        <button type="button" className="rounded-full bg-white p-2 text-blue-700" onClick={() => updateCartQuantity(item, Number(item.quantity || 1) + 1)}><Plus className="h-3 w-3" /></button>
+                  <div key={product?._id || item._id} className="grid grid-cols-[86px_1fr] gap-4 border border-[#e9e0d7] bg-[#fbfaf7] p-3 md:grid-cols-[112px_1fr]">
+                    <img src={imgUrl(product?.images?.[0])} alt={product?.name} className="h-24 w-full object-cover product-image-bg md:h-28" />
+                    <div className="min-w-0">
+                      <h3 className="truncate text-base font-black text-[#15120f] md:text-lg">{product?.name}</h3>
+                      <p className="mt-1 text-sm font-black text-[#a91d4b]">Rs. {itemPrice.toLocaleString("en-IN")}</p>
+                      <p className="text-xs text-[#756f66]">{product?.subCategory || product?.mainCategory}</p>
+                      <div className="mt-3 inline-flex items-center border border-[#e9e0d7] bg-white">
+                        <button type="button" className="p-2 text-[#15120f]" onClick={() => updateCartQuantity(item, Number(item.quantity || 1) - 1)}><Minus className="h-3 w-3" /></button>
+                        <span className="min-w-8 text-center text-sm font-black">{item.quantity || 1}</span>
+                        <button type="button" className="p-2 text-[#15120f]" onClick={() => updateCartQuantity(item, Number(item.quantity || 1) + 1)}><Plus className="h-3 w-3" /></button>
                       </div>
                     </div>
                   </div>
@@ -133,42 +132,49 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* Address */}
-          <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-lg md:rounded-[2rem] md:p-5">
-            <h2 className="mb-3 text-lg font-black text-slate-950 md:text-2xl">Delivery Address</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <div className="fashion-panel p-5 md:p-6">
+            <h2 className="text-2xl font-black text-[#15120f]">Delivery address</h2>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {addressFields.map((field) => (
-                <input key={field} name={field} onChange={handleChange} placeholder={field} className="input text-sm" required={field !== "alternatePhone"} />
+                <input
+                  key={field}
+                  name={field}
+                  onChange={handleChange}
+                  placeholder={field}
+                  className={`input text-sm ${field === "address" ? "sm:col-span-2" : ""}`}
+                  required={field !== "alternatePhone"}
+                />
               ))}
             </div>
           </div>
         </div>
 
-        {/* Order Summary */}
-        <aside className="h-fit rounded-2xl border border-blue-100 bg-white p-5 shadow-xl md:rounded-[2rem] md:p-6 lg:sticky lg:top-24">
-          <h2 className="text-xl font-black text-slate-950 md:text-2xl">Order Summary</h2>
-          <div className="mt-4 rounded-2xl bg-blue-50 p-3 md:rounded-3xl md:p-4">
-            <div className="flex items-center gap-2 text-sm font-black text-blue-700"><TicketPercent className="h-4 w-4" /> Coupon</div>
-            <p className="mt-1 text-xs text-slate-500">Coupon UI added. Backend logic can be added later.</p>
+        <aside className="h-fit border border-[#e9e0d7] bg-white p-6 lg:sticky lg:top-24">
+          <h2 className="text-2xl font-black text-[#15120f]">Order summary</h2>
+          <div className="mt-5 border border-[#e9e0d7] bg-[#fbfaf7] p-4">
+            <div className="flex items-center gap-2 text-sm font-black text-[#324414]"><TicketPercent className="h-4 w-4" /> Coupon</div>
+            <p className="mt-1 text-xs text-[#756f66]">Coupon display ready. Backend discount logic can be added later.</p>
           </div>
-          <div className="mt-4 space-y-2 text-sm text-slate-600 md:mt-5 md:space-y-3">
-            <div className="flex justify-between"><span>Items</span><b>{checkoutItems.length}</b></div>
-            <div className="flex justify-between"><span>Subtotal</span><b>₹{amount}</b></div>
-            <div className="flex justify-between"><span>Delivery</span><b className="text-green-600">Free</b></div>
+          <div className="mt-6 space-y-4 text-sm text-[#756f66]">
+            <div className="flex justify-between"><span>Items</span><b className="text-[#15120f]">{checkoutItems.length}</b></div>
+            <div className="flex justify-between"><span>Subtotal</span><b className="text-[#15120f]">Rs. {amount.toLocaleString("en-IN")}</b></div>
+            <div className="flex justify-between"><span>Delivery</span><b className="text-[#324414]">Free</b></div>
           </div>
-          <div className="mt-4 border-t pt-4">
-            <div className="flex justify-between text-2xl font-black text-blue-950"><span>Total</span><span>₹{amount}</span></div>
+          <div className="my-6 border-t border-dashed border-[#d8cbc0]" />
+          <div className="flex justify-between text-2xl font-black text-[#15120f]">
+            <span>Total</span>
+            <span>Rs. {amount.toLocaleString("en-IN")}</span>
           </div>
-          <div className="mt-5 grid gap-2 md:mt-6 md:gap-3">
+          <div className="mt-6 grid gap-3">
             {["Cash on Delivery", "Razorpay"].map((method) => (
-              <label key={method} className={`flex cursor-pointer items-center justify-between rounded-xl border p-3 text-sm font-black transition md:rounded-2xl md:p-4 ${paymentMethod === method ? "border-blue-600 bg-blue-50 text-blue-700" : "border-blue-100 text-slate-600"}`}>
+              <label key={method} className={`flex cursor-pointer items-center justify-between border p-4 text-sm font-black transition ${paymentMethod === method ? "border-[#15120f] bg-[#15120f] text-white" : "border-[#e9e0d7] text-[#15120f]"}`}>
                 <span>{method}</span>
                 <input type="radio" name="payment" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
               </label>
             ))}
           </div>
-          <button className="btn-primary mt-5 w-full text-sm md:mt-6">Place Order</button>
-          <p className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 md:mt-4"><ShieldCheck className="h-4 w-4" /> Secure payment & order</p>
+          <button className="btn-primary mt-6 w-full">Place Order</button>
+          <p className="mt-4 flex items-center justify-center gap-2 text-xs font-bold text-[#756f66]"><ShieldCheck className="h-4 w-4" /> Secure payment and order</p>
         </aside>
       </form>
     </section>

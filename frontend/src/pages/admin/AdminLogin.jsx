@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Lock, ShieldCheck, UserRound, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Lock, ShieldCheck, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 
@@ -26,102 +26,79 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex items-center justify-center p-4" style={{ background: "linear-gradient(135deg, #0f0c29 0%, #1a1040 50%, #0f172a 100%)" }}>
-
-      {/* Floating orbs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full opacity-30 blur-3xl" style={{ background: "radial-gradient(circle, #7c3aed, transparent)" }} />
-        <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full opacity-20 blur-3xl" style={{ background: "radial-gradient(circle, #a855f7, transparent)" }} />
-        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-10 blur-3xl" style={{ background: "radial-gradient(circle, #10b981, transparent)" }} />
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-      </div>
-
-      <div className="relative w-full max-w-md">
-
-        {/* Card */}
-        <div className="rounded-3xl p-8" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(40px)", boxShadow: "0 40px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
-
-          {/* Header */}
-          <div className="mb-8 text-center">
-            <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", boxShadow: "0 20px 40px rgba(124,58,237,0.4)" }}>
-              <img src="/logo.png" alt="logo" className="h-16 w-16 rounded-xl object-cover" />
-              <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full" style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}>
-                <Sparkles className="h-3 w-3 text-white" />
+    <div className="flex min-h-screen items-center justify-center bg-[#0f0d0a] p-4">
+      <div className="grid w-full max-w-5xl overflow-hidden border border-white/10 bg-[#15120f] md:grid-cols-[1fr_430px]">
+        <div className="hidden p-10 md:flex md:flex-col md:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Women's Styles" className="h-12 w-12 rounded-full bg-white object-cover p-1" />
+              <div>
+                <p className="text-2xl font-black text-white">Women's Styles</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#d6b36a]">Admin Studio</p>
               </div>
             </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Welcome Back</h1>
-            <p className="mt-1.5 text-sm font-medium" style={{ color: "#a78bfa" }}>Women's Styles · Admin Panel</p>
+            <h1 className="mt-14 max-w-lg text-5xl font-black leading-tight tracking-tight text-white">
+              Manage your fashion store with clarity.
+            </h1>
+            <p className="mt-5 max-w-md text-sm leading-7 text-white/45">
+              Products, orders, customers, and revenue stay in one focused workspace.
+            </p>
+          </div>
+          <p className="text-xs font-bold text-white/28">Secure access only</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="border-l border-white/10 bg-white p-7 md:p-8">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center bg-[#15120f] text-white">
+              <ShieldCheck className="h-8 w-8" />
+            </div>
+            <p className="editorial-kicker">Admin Login</p>
+            <h2 className="mt-3 text-4xl font-black text-[#15120f]">Welcome back</h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-
-            {/* Username */}
+          <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest" style={{ color: "#a78bfa" }}>Username</label>
+              <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-[#756f66]">Username</label>
               <div className="relative">
-                <UserRound className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 h-5 w-5" style={{ color: "#7c3aed" }} />
+                <UserRound className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
                 <input
                   name="username"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
-                  className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-white outline-none transition-all"
-                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  className="input pl-12"
                   placeholder="Enter username"
                   required
-                  onFocus={(e) => { e.target.style.border = "1px solid rgba(139,92,246,0.6)"; e.target.style.boxShadow = "0 0 0 4px rgba(139,92,246,0.15)"; }}
-                  onBlur={(e) => { e.target.style.border = "1px solid rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest" style={{ color: "#a78bfa" }}>Password</label>
+              <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-[#756f66]">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" style={{ color: "#7c3aed" }} />
+                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
                 <input
                   name="password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   type={showPassword ? "text" : "password"}
-                  className="w-full rounded-2xl py-4 pl-12 pr-12 text-sm font-bold text-white outline-none transition-all"
-                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  className="input pl-12 pr-12"
                   placeholder="Enter password"
                   required
-                  onFocus={(e) => { e.target.style.border = "1px solid rgba(139,92,246,0.6)"; e.target.style.boxShadow = "0 0 0 4px rgba(139,92,246,0.15)"; }}
-                  onBlur={(e) => { e.target.style.border = "1px solid rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
                 />
-                <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 transition hover:text-white" style={{ color: "#7c3aed" }}>
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#756f66] hover:text-[#a91d4b]">
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
+          </div>
 
-            {/* Error */}
-            {error && (
-              <div className="rounded-2xl px-4 py-3 text-sm font-bold text-red-300" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                {error}
-              </div>
-            )}
+          {error && <div className="mt-4 border border-[#f0d5dc] bg-[#fff1f5] px-4 py-3 text-sm font-bold text-[#a91d4b]">{error}</div>}
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="group mt-2 flex w-full items-center justify-center gap-2.5 rounded-2xl py-4 text-sm font-black text-white transition-all duration-200 disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", boxShadow: "0 16px 32px rgba(124,58,237,0.4)" }}
-            >
-              <ShieldCheck className="h-5 w-5" />
-              {loading ? "Signing in…" : "Sign In Securely"}
-            </button>
-          </form>
-
-          {/* Footer */}
-          <p className="mt-6 text-center text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.25)" }}>
-            Women's Styles Admin · Secure Access Only
-          </p>
-        </div>
+          <button type="submit" disabled={loading} className="btn-primary mt-6 w-full disabled:opacity-60">
+            <ShieldCheck className="h-5 w-5" />
+            {loading ? "Signing in..." : "Sign In Securely"}
+          </button>
+        </form>
       </div>
     </div>
   );

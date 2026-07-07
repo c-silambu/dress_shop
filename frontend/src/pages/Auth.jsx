@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Lock, Phone, Sparkles, User, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Phone, Sparkles, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -10,157 +10,85 @@ export default function Auth({ registerMode = false }) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (event) => {
-    setForm((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
+  const handleChange = (event) => setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     try {
-      if (isRegister) {
-        await register(form);
-      } else {
-        await login(form.phone, form.password);
-      }
-
+      if (isRegister) await register(form);
+      else await login(form.phone, form.password);
       navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Authentication failed");
     }
   };
 
+  const fields = [
+    ...(isRegister ? [
+      { name: "name", placeholder: "User name", icon: User, required: true },
+      { name: "email", placeholder: "Email", icon: Mail, required: false },
+    ] : []),
+    { name: "phone", placeholder: "Phone number", icon: Phone, required: true },
+  ];
+
   return (
-    <section className="relative min-h-[80vh] overflow-hidden bg-gradient-to-br from-blue-50 via-white to-pink-50 px-4 py-12">
-      <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl" />
-      <div className="absolute -right-24 bottom-10 h-72 w-72 rounded-full bg-pink-300/30 blur-3xl" />
-
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2">
+    <section className="page-shell">
+      <div className="section-wrap grid min-h-[calc(100vh-74px)] items-center gap-10 py-10 md:grid-cols-[1fr_480px]">
         <div className="hidden md:block">
-          <div className="rounded-[2.5rem] bg-gradient-to-br from-blue-700 via-blue-600 to-pink-500 p-1 shadow-2xl shadow-blue-200">
-            <div className="rounded-[2.4rem] bg-white/10 p-10 text-white backdrop-blur-xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-5 py-2 text-sm font-bold">
-                <Sparkles size={18} />
-                Premium Fashion Store
+          <p className="editorial-kicker">Women's Styles</p>
+          <h1 className="mt-4 max-w-2xl text-5xl font-black leading-tight tracking-tight text-[#15120f]">
+            {isRegister ? "Create your boutique shopping account" : "Welcome back to your boutique account"}
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-8 text-[#756f66]">
+            Login to manage cart, favourites, checkout, and order tracking for dresses and jewellery.
+          </p>
+          <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
+            {["Secure login", "Track orders", "Save favourites"].map((item) => (
+              <div key={item} className="border border-[#e9e0d7] bg-white p-4">
+                <Sparkles className="h-4 w-4 text-[#a91d4b]" />
+                <p className="mt-3 text-xs font-black uppercase tracking-[0.16em] text-[#15120f]">{item}</p>
               </div>
-
-              <h1 className="text-5xl font-black leading-tight">
-                {isRegister ? "Create your fashion account" : "Welcome back"}
-              </h1>
-
-              <p className="mt-5 max-w-md text-lg text-white/85">
-                Login or register to manage cart, favourites, checkout and your
-                latest Women’s Styles orders.
-              </p>
-
-              <div className="mt-10 grid gap-4">
-                {["Secure login", "Track orders", "Save favourites"].map(
-                  (item) => (
-                    <div
-                      key={item}
-                      className="rounded-2xl bg-white/15 px-5 py-4 font-bold backdrop-blur"
-                    >
-                      ✨ {item}
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-[2.5rem] border border-blue-100 bg-white/90 p-8 shadow-2xl shadow-blue-100 backdrop-blur md:p-10"
-        >
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-              {isRegister ? <User size={30} /> : <Lock size={30} />}
+        <form onSubmit={handleSubmit} className="fashion-panel p-6 md:p-8">
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-[#15120f] text-white">
+              {isRegister ? <User size={28} /> : <Lock size={28} />}
             </div>
-
-            <p className="font-bold uppercase tracking-[0.25em] text-blue-600">
-              Women’s Styles
-            </p>
-
-            <h2 className="mt-3 text-4xl font-black text-blue-950">
-              {isRegister ? "Register" : "Login"}
-            </h2>
-
-            <p className="mt-2 text-slate-500">
-              {isRegister
-                ? "Create your account and start shopping"
-                : "Enter your phone number and password"}
-            </p>
+            <p className="editorial-kicker">Account</p>
+            <h2 className="mt-3 text-4xl font-black text-[#15120f]">{isRegister ? "Register" : "Login"}</h2>
+            <p className="mt-2 text-sm text-[#756f66]">{isRegister ? "Create your account and start shopping" : "Enter phone number and password"}</p>
           </div>
 
           <div className="space-y-4">
-            {isRegister && (
-              <>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-500" />
-                  <input
-                    name="name"
-                    onChange={handleChange}
-                    placeholder="User name"
-                    className="w-full rounded-2xl border border-blue-100 bg-blue-50/60 py-4 pl-12 pr-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    required
-                  />
-                </div>
-
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-500" />
-                  <input
-                    name="email"
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className="w-full rounded-2xl border border-blue-100 bg-blue-50/60 py-4 pl-12 pr-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
-                  />
-                </div>
-              </>
-            )}
+            {fields.map(({ name, placeholder, icon: Icon, required }) => (
+              <div key={name} className="relative">
+                <Icon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
+                <input name={name} onChange={handleChange} placeholder={placeholder} className="input pl-12" required={required} />
+              </div>
+            ))}
 
             <div className="relative">
-              <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-500" />
-              <input
-                name="phone"
-                onChange={handleChange}
-                placeholder="Phone number"
-                className="w-full rounded-2xl border border-blue-100 bg-blue-50/60 py-4 pl-12 pr-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-500" />
+              <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
               <input
                 name="password"
                 onChange={handleChange}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="w-full rounded-2xl border border-blue-100 bg-blue-50/60 py-4 pl-12 pr-12 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="input pl-12 pr-12"
                 required
               />
-              <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500">
+              <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#756f66] hover:text-[#a91d4b]">
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
 
-          <button className="mt-6 w-full rounded-full bg-gradient-to-r from-blue-700 to-blue-500 py-4 font-black text-white shadow-xl shadow-blue-200 transition hover:-translate-y-1 hover:shadow-2xl">
-            {isRegister ? "Create Account" : "Login"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsRegister((value) => !value)}
-            className="mt-5 w-full rounded-full border border-blue-100 py-3 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
-          >
-            {isRegister
-              ? "Already have an account? Login"
-              : "New user? Create account"}
+          <button className="btn-primary mt-6 w-full">{isRegister ? "Create Account" : "Login"}</button>
+          <button type="button" onClick={() => setIsRegister((value) => !value)} className="btn-soft mt-3 w-full">
+            {isRegister ? "Already have an account? Login" : "New user? Create account"}
           </button>
         </form>
       </div>

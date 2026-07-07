@@ -1,16 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  LogOut,
-  PackageCheck,
-  Phone,
-  User,
-  ChevronRight,
-  Heart,
-  ShoppingBag,
-  Sparkles,
-  Mail,
-} from "lucide-react";
+import { ChevronRight, Heart, LogOut, PackageCheck, Phone, ShoppingBag, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Profile() {
@@ -18,163 +8,73 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
 
   const menuItems = [
-    {
-      icon: PackageCheck,
-      label: "My Orders",
-      sub: "Track & manage your orders",
-      action: () => navigate("/orders"),
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-      accent: "group-hover:bg-blue-600",
-    },
-    {
-      icon: Heart,
-      label: "Favourites",
-      sub: "Your saved wishlist items",
-      action: () => navigate("/favourites"),
-      iconBg: "bg-pink-100",
-      iconColor: "text-pink-500",
-      accent: "group-hover:bg-pink-500",
-    },
-    {
-      icon: ShoppingBag,
-      label: "My Cart",
-      sub: "View items in your bag",
-      action: () => navigate("/cart"),
-      iconBg: "bg-indigo-100",
-      iconColor: "text-indigo-600",
-      accent: "group-hover:bg-indigo-600",
-    },
+    { icon: PackageCheck, label: "My Orders", sub: "Track and manage orders", action: () => navigate("/orders") },
+    { icon: Heart, label: "Favourites", sub: "Saved wishlist items", action: () => navigate("/favourites") },
+    { icon: ShoppingBag, label: "My Cart", sub: "View your shopping bag", action: () => navigate("/cart") },
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fbff] pb-28 md:pb-12">
-      {/* ── Hero Banner ── */}
-      <div className="luxury-gradient relative overflow-hidden px-4 pb-24 pt-10">
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pink-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-8 left-6 h-36 w-36 rounded-full bg-blue-300/20 blur-2xl" />
-        <div className="pointer-events-none absolute right-1/3 top-1/2 h-24 w-24 rounded-full bg-white/10 blur-xl" />
-
-        {/* Badge */}
-        <div className="relative mx-auto flex max-w-sm justify-center">
-          <span className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white/90 backdrop-blur ring-1 ring-white/20">
-            <Sparkles className="h-3 w-3 text-yellow-300" />
-            Women's Styles Member
-          </span>
-        </div>
-
-        {/* Avatar */}
-        <div className="relative mx-auto flex max-w-sm flex-col items-center">
-          <div className="glow relative flex h-24 w-24 items-center justify-center rounded-3xl bg-white/20 backdrop-blur ring-4 ring-white/40">
-            <span className="text-3xl font-black text-white">{initials}</span>
-            <span className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-green-400 ring-2 ring-white">
-              <span className="h-2 w-2 rounded-full bg-white" />
-            </span>
-          </div>
-          <h1 className="mt-4 text-2xl font-black tracking-tight text-white">
-            {user?.name || "User"}
-          </h1>
-          <p className="mt-0.5 text-sm text-blue-200/80">
-            {user?.email || user?.phone || "Member"}
-          </p>
+    <section className="page-shell">
+      <div className="border-b border-[#e9e0d7] bg-white">
+        <div className="section-wrap py-10 md:py-14">
+          <p className="editorial-kicker">Member Account</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-[#15120f] md:text-5xl">Profile</h1>
         </div>
       </div>
 
-      {/* ── Main Content ── */}
-      <div className="relative mx-auto max-w-md px-4">
-        {/* Info Glass Cards */}
-        <div className="-mt-10 grid grid-cols-2 gap-3">
-          <div className="glass-card rounded-2xl p-4">
-            <div className="mb-1.5 flex items-center gap-1.5">
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100">
-                <User className="h-3.5 w-3.5 text-blue-600" />
-              </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Name
-              </p>
+      <div className="section-wrap grid gap-6 py-8 md:grid-cols-[360px_1fr] md:py-12">
+        <aside className="fashion-panel p-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-20 items-center justify-center bg-[#15120f] text-2xl font-black text-white">
+              {initials}
             </div>
-            <p className="truncate text-sm font-black text-slate-900">
-              {user?.name || "—"}
-            </p>
-          </div>
-
-          <div className="glass-card rounded-2xl p-4">
-            <div className="mb-1.5 flex items-center gap-1.5">
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-pink-100">
-                <Phone className="h-3.5 w-3.5 text-pink-500" />
-              </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Phone
-              </p>
+            <div className="min-w-0">
+              <h2 className="truncate text-2xl font-black text-[#15120f]">{user?.name || "User"}</h2>
+              <p className="truncate text-sm text-[#756f66]">{user?.email || user?.phone || "Member"}</p>
             </div>
-            <p className="truncate text-sm font-black text-slate-900">
-              {user?.phone || "—"}
-            </p>
           </div>
-        </div>
+          <div className="mt-6 grid gap-3">
+            <div className="border border-[#e9e0d7] bg-[#fbfaf7] p-4">
+              <p className="editorial-kicker text-[9px]">Name</p>
+              <p className="mt-1 truncate text-sm font-black text-[#15120f]">{user?.name || "-"}</p>
+            </div>
+            <div className="border border-[#e9e0d7] bg-[#fbfaf7] p-4">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-[#a91d4b]" />
+                <p className="editorial-kicker text-[9px]">Phone</p>
+              </div>
+              <p className="mt-1 truncate text-sm font-black text-[#15120f]">{user?.phone || "-"}</p>
+            </div>
+          </div>
+        </aside>
 
-        {/* Section Label */}
-        <p className="mb-2 mt-6 px-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-          Quick Access
-        </p>
-
-        {/* Menu Items */}
-        <div className="space-y-2.5">
-          {menuItems.map(({ icon: Icon, label, sub, action, iconBg, iconColor, accent }) => (
+        <div className="space-y-3">
+          {menuItems.map(({ icon: Icon, label, sub, action }) => (
             <button
               key={label}
               onClick={action}
-              className="group glass-card flex w-full items-center gap-4 rounded-2xl px-4 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98]"
+              className="group flex w-full items-center gap-4 border border-[#e9e0d7] bg-white p-5 text-left transition hover:border-[#15120f]"
             >
-              <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBg} transition-all duration-200 ${accent} group-hover:[&>svg]:text-white`}
-              >
-                <Icon className={`h-5 w-5 ${iconColor} transition-colors duration-200`} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-[#f6f0e8] text-[#a91d4b]">
+                <Icon className="h-5 w-5" />
               </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-black text-slate-900">{label}</p>
-                <p className="text-xs text-slate-400">{sub}</p>
+              <div className="flex-1">
+                <p className="text-base font-black text-[#15120f]">{label}</p>
+                <p className="text-sm text-[#756f66]">{sub}</p>
               </div>
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 transition-all duration-200 group-hover:bg-blue-600 group-hover:text-white">
-                <ChevronRight className="h-4 w-4 text-slate-400 transition-colors duration-200 group-hover:text-white" />
-              </div>
+              <ChevronRight className="h-5 w-5 text-[#756f66] transition group-hover:translate-x-1 group-hover:text-[#a91d4b]" />
             </button>
           ))}
+
+          <button onClick={logout} className="btn-soft w-full border-[#ead7df] text-[#a91d4b] hover:border-[#a91d4b]">
+            <LogOut className="h-4 w-4" /> Sign Out
+          </button>
         </div>
-
-        {/* Divider */}
-        <div className="my-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-slate-200" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
-            Account
-          </span>
-          <div className="h-px flex-1 bg-slate-200" />
-        </div>
-
-        {/* Logout */}
-        <button
-          onClick={logout}
-          className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-red-50 py-4 text-sm font-black text-red-500 ring-1 ring-red-100 transition-all duration-200 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-200 active:scale-[0.98]"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
-
-        {/* Footer note */}
-        <p className="mt-5 text-center text-[11px] text-slate-400">
-          Women's Styles · Member Account
-        </p>
       </div>
-    </div>
+    </section>
   );
 }
