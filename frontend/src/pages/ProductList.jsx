@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import api from "../api/api";
 import ProductCard from "../components/ProductCard";
+import ProductLoader from "../Productlode/ProductLoader";
 
 export default function ProductList({ category }) {
   const [items, setItems] = useState([]);
@@ -9,6 +10,7 @@ export default function ProductList({ category }) {
   const [selectedCategory, setSelectedCategory] = useState(category || "");
   const [subCategory, setSubCategory] = useState("");
   const [subOptions, setSubOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const normalize = (value) => value?.toString().trim().toLowerCase() || "";
 
@@ -46,15 +48,22 @@ export default function ProductList({ category }) {
   }, [selectedCategory]);
 
   useEffect(() => {
-    api
-      .get("/products", {
-        params: {
-          category: selectedCategory || undefined,
-          status: "Active",
-        },
-      })
-      .then((r) => setItems(r.data))
-      .catch(() => setItems([]));
+    setLoading(true);
+
+    const timer = setTimeout(() => {
+      api
+        .get("/products", {
+          params: {
+            category: selectedCategory || undefined,
+            status: "Active",
+          },
+        })
+        .then((r) => setItems(r.data))
+        .catch(() => setItems([]))
+        .finally(() => setLoading(false));
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, [selectedCategory]);
 
   const filteredItems = useMemo(() => {
@@ -64,33 +73,41 @@ export default function ProductList({ category }) {
         item.name?.toLowerCase().includes(search.toLowerCase().trim());
 
       const matchSubCategory =
-        !subCategory ||
-        normalize(item.subCategory) === normalize(subCategory);
+        !subCategory || normalize(item.subCategory) === normalize(subCategory);
 
       return matchSearch && matchSubCategory;
     });
   }, [items, search, subCategory]);
+
+  if (loading) {
+    return <ProductLoader />;
+  }
 
   return (
     <section className="page-shell mb-20">
       <div className="border-b border-[#e9e0d7] bg-white">
         <div className="section-wrap py-10 text-center md:py-16">
           <p className="editorial-kicker">Women's Styles</p>
+
           <h1 className="mt-3 text-4xl font-black tracking-tight text-[#15120f] md:text-6xl">
             {category || "All Products"}
           </h1>
+
           <p className="mt-3 text-sm font-medium text-[#756f66]">
-            Showing {filteredItems.length} product{filteredItems.length !== 1 ? "s" : ""}
+            Showing {filteredItems.length} product
+            {filteredItems.length !== 1 ? "s" : ""}
           </p>
 
           <div className="relative mx-auto mt-7 max-w-lg">
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#756f66]" />
+
             <input
               className="input pl-11 pr-10 text-sm"
               placeholder="Search dresses or jewellery..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+
             {search && (
               <button
                 onClick={() => setSearch("")}

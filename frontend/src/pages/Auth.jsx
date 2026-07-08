@@ -66,7 +66,7 @@ export default function Auth({ registerMode = false }) {
             {fields.map(({ name, placeholder, icon: Icon, required }) => (
               <div key={name} className="relative">
                 <Icon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
-                <input name={name} onChange={handleChange} placeholder={placeholder} className="input pl-12" required={required} />
+                <input name={name} onChange={handleChange} placeholder={placeholder} className="input input-with-leading-icon" required={required} />
               </div>
             ))}
 
@@ -77,7 +77,7 @@ export default function Auth({ registerMode = false }) {
                 onChange={handleChange}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="input pl-12 pr-12"
+                className="input input-with-leading-icon input-with-trailing-icon"
                 required
               />
               <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#756f66] hover:text-[#a91d4b]">
