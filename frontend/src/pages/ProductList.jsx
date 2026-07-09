@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { BadgePercent, Search, Sparkles, Truck, X } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import api from "../api/api";
 import ProductCard from "../components/ProductCard";
 import ProductLoader from "../Productlode/ProductLoader";
@@ -108,13 +108,15 @@ export default function ProductList({ category }) {
             </p>
           </div>
 
-          <div className="mx-auto mt-6 max-w-3xl border border-[#e9e0d7] bg-white/90 p-2.5 shadow-[0_18px_45px_rgba(21,18,15,0.09)] backdrop-blur md:p-3">
-            <div className="flex flex-col gap-2.5 md:flex-row md:items-stretch">
+          <div className="mx-auto mt-6 max-w-2xl">
+            <div className="flex flex-col gap-2 rounded-[1.75rem] border border-[#e6d9cf] bg-white/95 p-2 shadow-[0_16px_42px_rgba(21,18,15,0.10)] backdrop-blur md:flex-row md:items-center">
               <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a91d4b]" />
+                <span className="pointer-events-none absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#f7eee8] text-[#a91d4b]">
+                  <Search className="h-4 w-4" />
+                </span>
 
                 <input
-                  className="input h-12 rounded-none border-[#e9e0d7] bg-[#fffdf9] pb-0 pt-0 pl-11 pr-10 text-sm font-semibold leading-[3rem] shadow-inner placeholder:font-medium"
+                  className="h-12 w-full rounded-[1.25rem] border-0 bg-transparent py-0 pl-14 pr-10 text-sm font-semibold leading-[3rem] text-[#15120f] outline-none placeholder:text-[#948b82]"
                   placeholder="Search dresses, jewellery, kurtis..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -123,7 +125,7 @@ export default function ProductList({ category }) {
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-[#756f66] transition hover:bg-[#f7f0e8] hover:text-[#a91d4b]"
+                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#756f66] transition hover:bg-[#f7f0e8] hover:text-[#a91d4b]"
                     title="Clear search"
                   >
                     <X className="h-4 w-4" />
@@ -131,31 +133,26 @@ export default function ProductList({ category }) {
                 )}
               </div>
 
-              <div className="flex min-h-12 items-center justify-center gap-2 border border-[#eadfd5] bg-[#15120f] px-4 text-white md:min-w-36">
-                <span className="text-xl font-black leading-none">
+              <div className="flex h-11 items-center justify-center gap-2 rounded-[1.1rem] bg-[#15120f] px-4 text-white md:min-w-32">
+                <span className="text-lg font-black leading-none">
                   {filteredItems.length}
                 </span>
-                <span className="text-left text-[9px] font-black uppercase leading-3 tracking-[0.16em] text-white/75">
-                  Styles
-                  <br />
-                  Found
+                <span className="text-[9px] font-black uppercase leading-none tracking-[0.16em] text-white/75">
+                  Styles Found
                 </span>
               </div>
             </div>
 
-            <div className="mt-2.5 grid grid-cols-2 gap-2 text-[9px] font-black uppercase tracking-[0.15em] text-[#756f66] md:grid-cols-3">
-              <div className="flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-2.5">
-                <BadgePercent className="h-3.5 w-3.5 text-[#a91d4b]" />
-                Best Deals
-              </div>
-              <div className="flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-2.5">
-                <Truck className="h-3.5 w-3.5 text-[#324414]" />
-                Quick Delivery
-              </div>
-              <div className="col-span-2 flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-2.5 md:col-span-1">
-                <Sparkles className="h-3.5 w-3.5 text-[#b68a35]" />
-                Curated Picks
-              </div>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.16em] text-[#756f66]">
+              {["Best Deals", "Quick Delivery", "Curated Picks"].map((label) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#eadfd5] bg-white/70 px-3 py-1.5"
+                >
+                  <Sparkles className="h-3 w-3 text-[#b68a35]" />
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
