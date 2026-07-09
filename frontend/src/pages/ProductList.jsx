@@ -92,29 +92,29 @@ export default function ProductList({ category }) {
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#b68a35]/40 to-transparent" />
         </div>
 
-        <div className="section-wrap relative py-10 md:py-16">
+        <div className="section-wrap relative py-7 md:py-10">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="inline-flex items-center gap-2 border border-[#e9e0d7] bg-white/80 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#324414] shadow-sm backdrop-blur">
+            <div className="inline-flex items-center gap-2 border border-[#e9e0d7] bg-white/80 px-3.5 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-[#324414] shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-[#b68a35]" />
               Women's Styles
             </div>
 
-            <h1 className="mt-5 text-4xl font-black tracking-tight text-[#15120f] md:text-6xl">
+            <h1 className="mt-4 text-3xl font-black tracking-tight text-[#15120f] md:text-5xl">
               {category || "All Products"}
             </h1>
 
-            <p className="mx-auto mt-3 max-w-2xl text-sm font-medium leading-6 text-[#756f66] md:text-base">
-              Find fresh picks, occasion-ready outfits, and favourite styles in a faster, prettier browse.
+            <p className="mx-auto mt-2 max-w-2xl text-sm font-medium leading-6 text-[#756f66]">
+              Find fresh picks, occasion-ready outfits, and favourite styles.
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-3xl border border-[#e9e0d7] bg-white/90 p-3 shadow-[0_24px_70px_rgba(21,18,15,0.10)] backdrop-blur md:p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="mx-auto mt-6 max-w-3xl border border-[#e9e0d7] bg-white/90 p-2.5 shadow-[0_18px_45px_rgba(21,18,15,0.09)] backdrop-blur md:p-3">
+            <div className="flex flex-col gap-2.5 md:flex-row md:items-stretch">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a91d4b]" />
 
                 <input
-                  className="input h-14 rounded-none border-[#e9e0d7] bg-[#fffdf9] pl-12 pr-11 text-sm font-semibold shadow-inner placeholder:font-medium"
+                  className="input h-12 rounded-none border-[#e9e0d7] bg-[#fffdf9] pb-0 pt-0 pl-11 pr-10 text-sm font-semibold leading-[3rem] shadow-inner placeholder:font-medium"
                   placeholder="Search dresses, jewellery, kurtis..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -123,7 +123,7 @@ export default function ProductList({ category }) {
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-[#756f66] transition hover:bg-[#f7f0e8] hover:text-[#a91d4b]"
+                    className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-[#756f66] transition hover:bg-[#f7f0e8] hover:text-[#a91d4b]"
                     title="Clear search"
                   >
                     <X className="h-4 w-4" />
@@ -131,11 +131,11 @@ export default function ProductList({ category }) {
                 )}
               </div>
 
-              <div className="flex items-center justify-center gap-2 border border-[#eadfd5] bg-[#15120f] px-5 py-4 text-white md:min-w-44">
-                <span className="text-2xl font-black leading-none">
+              <div className="flex min-h-12 items-center justify-center gap-2 border border-[#eadfd5] bg-[#15120f] px-4 text-white md:min-w-36">
+                <span className="text-xl font-black leading-none">
                   {filteredItems.length}
                 </span>
-                <span className="text-left text-[10px] font-black uppercase leading-4 tracking-[0.18em] text-white/75">
+                <span className="text-left text-[9px] font-black uppercase leading-3 tracking-[0.16em] text-white/75">
                   Styles
                   <br />
                   Found
@@ -143,16 +143,16 @@ export default function ProductList({ category }) {
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#756f66] md:grid-cols-3">
-              <div className="flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-3">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 text-[9px] font-black uppercase tracking-[0.15em] text-[#756f66] md:grid-cols-3">
+              <div className="flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-2.5">
                 <BadgePercent className="h-3.5 w-3.5 text-[#a91d4b]" />
                 Best Deals
               </div>
-              <div className="flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-3">
+              <div className="flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-2.5">
                 <Truck className="h-3.5 w-3.5 text-[#324414]" />
                 Quick Delivery
               </div>
-              <div className="col-span-2 flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-3 md:col-span-1">
+              <div className="col-span-2 flex items-center justify-center gap-2 bg-[#fbfaf7] px-3 py-2.5 md:col-span-1">
                 <Sparkles className="h-3.5 w-3.5 text-[#b68a35]" />
                 Curated Picks
               </div>
