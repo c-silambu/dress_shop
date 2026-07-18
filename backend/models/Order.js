@@ -11,5 +11,7 @@ const orderSchema=new mongoose.Schema({
   deliveryStatus:{type:String,default:'Order Placed'},
   cancelReason:{type:String,default:''},
   cancelledByAdmin:{type:Boolean,default:false},
+  confirmationEmailSentAt:Date,
+  cancellationEmailSentAt:Date,
 },{timestamps:true});
 module.exports=mongoose.model('Order',orderSchema);

@@ -3,6 +3,24 @@ const Product=require('../models/Product');
 const User=require('../models/User');
 const mongoose=require('mongoose');
 const jwt=require('jsonwebtoken');
+const {configured:mailConfigured,sendMail}=require('../utils/mailer');
+
+const escapeHtml=(value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const money=(value)=>`₹${Number(value||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const displayId=(order)=>order._id.toString().slice(-8).toUpperCase();
+const sendOrderConfirmation=async(order,user)=>{
+  if(!mailConfigured()||!user?.email)return false;
+  const rows=order.items.map(item=>`<tr><td style="padding:10px;border-bottom:1px solid #eee">${escapeHtml(item.name)}${item.size?`<br><small>Size: ${escapeHtml(item.size)}</small>`:''}${item.color?`<br><small>Colour: ${escapeHtml(item.color)}</small>`:''}</td><td style="padding:10px;text-align:center;border-bottom:1px solid #eee">${item.quantity}</td><td style="padding:10px;text-align:right;border-bottom:1px solid #eee">${money(item.price*item.quantity)}</td></tr>`).join('');
+  await sendMail({to:user.email,subject:`Order confirmed #${displayId(order)} | Women's Styles`,text:`Thank you for your order. Order #${displayId(order)}. Total: ${money(order.amount)}. Payment: ${order.paymentMethod} (${order.paymentStatus}).`,html:`<div style="max-width:650px;margin:auto;font-family:Arial,sans-serif;color:#2a211b;line-height:1.6"><h1 style="color:#9b6d25">Thank you for your order!</h1><p>Hi ${escapeHtml(user.name||order.address?.fullName||'Customer')}, your order <b>#${displayId(order)}</b> has been placed successfully.</p><table style="width:100%;border-collapse:collapse"><thead><tr><th style="padding:10px;text-align:left;background:#f5f1ea">Item</th><th style="padding:10px;background:#f5f1ea">Qty</th><th style="padding:10px;text-align:right;background:#f5f1ea">Amount</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="2" style="padding:14px;text-align:right"><b>Total</b></td><td style="padding:14px;text-align:right"><b>${money(order.amount)}</b></td></tr></tfoot></table><p><b>Payment:</b> ${escapeHtml(order.paymentMethod)} — ${escapeHtml(order.paymentStatus)}</p><p><b>Delivery address:</b><br>${escapeHtml(order.address?.fullName)}<br>${escapeHtml(order.address?.address)}, ${escapeHtml(order.address?.city)}, ${escapeHtml(order.address?.district)}<br>${escapeHtml(order.address?.state)} - ${escapeHtml(order.address?.pincode)}</p><p style="color:#777;font-size:12px">This email is your order bill and confirmation.</p></div>`});
+  return true;
+};
+const sendCancellationConfirmation=async(order,user)=>{
+  if(!mailConfigured()||!user?.email)return false;
+  const paid=order.paymentStatus==='Paid';
+  const refund=paid?`Your refund of ${money(order.amount)} will be credited to your original payment method within 7 working days.`:'No online payment was collected for this order, so no refund is required.';
+  await sendMail({to:user.email,subject:`Cancellation confirmed #${displayId(order)} | Women's Styles`,text:`Your order #${displayId(order)} cancellation has been accepted. ${refund}`,html:`<div style="max-width:620px;margin:auto;font-family:Arial,sans-serif;color:#2a211b;line-height:1.7"><h1 style="color:#9b6d25">Cancellation confirmed</h1><p>Hi ${escapeHtml(user.name||'Customer')}, your cancellation for order <b>#${displayId(order)}</b> has been accepted by Women’s Styles.</p><div style="background:#f5f1ea;padding:18px;border-left:4px solid #9b6d25"><b>${escapeHtml(refund)}</b></div><p><b>Cancellation reason:</b> ${escapeHtml(order.cancelReason||'Order cancelled')}</p><p>If you need help, please reply to this email.</p></div>`});
+  return true;
+};
 
 const restockOrderItems=async(items=[])=>{
   for(const item of items){
@@ -46,6 +64,7 @@ exports.create=async(req,res)=>{
     }
     const order=await Order.create({...req.body,items,amount,paymentStatus,razorpayPaymentId,user:req.user._id});
     for(const item of items) await Product.findOneAndUpdate({_id:item.product,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity,soldCount:item.quantity}});
+    try{if(await sendOrderConfirmation(order,req.user)){order.confirmationEmailSentAt=new Date();await order.save()}}catch(mailError){console.error('Order confirmation email failed:',mailError.message)}
     res.status(201).json(order);
   }catch(e){res.status(500).json({message:e.message})}
 };
@@ -88,19 +107,14 @@ exports.cancelOrder=async(req,res)=>{
     if(!order)
       return res.status(404).json({message:'Order not found. Please refresh your orders and try again.'});
 
-    const nonCancellable=['Shipped','Out for Delivery','Delivered','Cancelled'];
+    const nonCancellable=['Shipped','Out for Delivery','Delivered','Cancelled','Cancellation Requested'];
     if(nonCancellable.includes(order.orderStatus))
       return res.status(400).json({message:'This order cannot be cancelled at this stage'});
-    order.orderStatus='Cancelled';
-    order.deliveryStatus='Cancelled';
+    order.orderStatus='Cancellation Requested';
+    order.deliveryStatus='Cancellation Requested';
     order.cancelReason=req.body.reason||'Cancelled by user';
     order.cancelledByAdmin=false;
     await order.save();
-    try{
-      await restockOrderItems(order.items);
-    }catch(restockError){
-      console.error('restockOrderItems error:',restockError.message);
-    }
     res.json(order);
   }catch(e){
     console.error('cancelOrder error:',e.message);
@@ -112,13 +126,23 @@ exports.adminOrders=async(req,res)=>
   res.json(await Order.find().populate('user','name email phone').sort('-createdAt'));
 
 exports.updateStatus=async(req,res)=>{
-  const status=req.body.orderStatus||req.body.status;
-  const update={orderStatus:status,deliveryStatus:status};
-  if(status==='Cancelled'){
-    update.cancelReason=req.body.cancelReason||'Unfortunately out of stock. Cancelled by admin.';
-    update.cancelledByAdmin=true;
-  }
-  res.json(await Order.findByIdAndUpdate(req.params.id,update,{new:true}));
+  try{
+    const status=req.body.orderStatus||req.body.status;
+    const order=await Order.findById(req.params.id).populate('user','name email phone');
+    if(!order)return res.status(404).json({message:'Order not found'});
+    const wasCancelled=order.orderStatus==='Cancelled';
+    order.orderStatus=status;order.deliveryStatus=status;
+    if(status==='Cancelled'){
+      order.cancelReason=req.body.cancelReason||order.cancelReason||'Cancellation accepted by admin.';
+      order.cancelledByAdmin=true;
+      if(!wasCancelled){try{await restockOrderItems(order.items)}catch(error){console.error('Admin cancellation restock failed:',error.message)}}
+    }
+    await order.save();
+    if(status==='Cancelled'&&!wasCancelled&&!order.cancellationEmailSentAt){
+      try{if(await sendCancellationConfirmation(order,order.user)){order.cancellationEmailSentAt=new Date();await order.save()}}catch(mailError){console.error('Cancellation email failed:',mailError.message)}
+    }
+    res.json(order);
+  }catch(error){res.status(500).json({message:error.message})}
 };
 
 exports.summary=async(req,res)=>{

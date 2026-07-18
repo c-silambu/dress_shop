@@ -10,6 +10,7 @@ const STATUS_STYLE = {
   "Out for Delivery": "bg-[#fff6df] text-[#8b6828]",
   "Delivered": "bg-[#eef5e8] text-[#324414]",
   "Cancelled": "bg-[#fff1f5] text-[#a91d4b]",
+  "Cancellation Requested": "bg-[#fff7ed] text-[#c2410c]",
 };
 
 const CANCEL_REASONS = [
@@ -131,11 +132,11 @@ function OrderCard({ order, onCancelled }) {
           <div className="px-3"><p className="text-[10px] font-bold text-[#756f66]">Payment</p><p className="mt-1 text-xs font-black text-[#15120f]">{order.paymentMethod === "Cash on Delivery" ? "COD" : "Online"}</p></div>
         </div>
 
-        {order.orderStatus === "Cancelled" && order.cancelReason && (
+        {["Cancelled","Cancellation Requested"].includes(order.orderStatus) && order.cancelReason && (
           <div className="mx-5 mb-4 flex items-start gap-2 border border-[#f0d5dc] bg-[#fff1f5] px-3 py-2.5">
             <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#a91d4b]" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#a91d4b]">{order.cancelledByAdmin ? "Cancelled by Store" : "Cancel Reason"}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#a91d4b]">{order.orderStatus === "Cancellation Requested" ? "Waiting for admin approval" : order.cancelledByAdmin ? "Cancelled by Store" : "Cancel Reason"}</p>
               <p className="text-xs font-bold text-[#761131]">{order.cancelReason}</p>
             </div>
           </div>
@@ -179,7 +180,7 @@ function OrderCard({ order, onCancelled }) {
             )}
 
             {canCancel && (
-              <button onClick={() => setShowCancel(true)} className="mt-4 flex w-full items-center justify-center gap-2 border border-[#f0d5dc] bg-[#fff1f5] py-3 text-sm font-black text-[#a91d4b] transition hover:bg-[#a91d4b] hover:text-white">
+              <button onClick={() => setShowCancel(true)} className="order-cancel-button mt-4 flex w-full items-center justify-center gap-2 py-3 text-sm font-black transition">
                 <XCircle className="h-4 w-4" /> Cancel Order
               </button>
             )}

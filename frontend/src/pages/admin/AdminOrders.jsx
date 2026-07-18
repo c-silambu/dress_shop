@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import api from "../../api/api";
 
-const STATUSES = ["Order Placed","Accepted","Packed","Shipped","Out for Delivery","Delivered","Cancelled"];
+const STATUSES = ["Order Placed","Accepted","Packed","Shipped","Out for Delivery","Delivered","Cancellation Requested","Cancelled"];
 
 const STATUS_STYLE = {
   "Order Placed":     { bg: "rgba(99,102,241,0.15)",  text: "#818cf8", border: "rgba(99,102,241,0.3)",  dot: "#6366f1" },
@@ -15,6 +15,7 @@ const STATUS_STYLE = {
   "Out for Delivery": { bg: "rgba(249,115,22,0.15)",  text: "#fb923c", border: "rgba(249,115,22,0.3)",  dot: "#f97316" },
   "Delivered":        { bg: "rgba(16,185,129,0.15)",  text: "#34d399", border: "rgba(16,185,129,0.3)",  dot: "#10b981" },
   "Cancelled":        { bg: "rgba(239,68,68,0.15)",   text: "#f87171", border: "rgba(239,68,68,0.3)",   dot: "#ef4444" },
+  "Cancellation Requested": { bg: "rgba(249,115,22,0.15)", text: "#fb923c", border: "rgba(249,115,22,0.3)", dot: "#f97316" },
 };
 
 const ADMIN_CANCEL_REASONS = [
@@ -47,7 +48,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
     setSaving(true);
     try {
       const payload = { orderStatus: status };
-      if (status === "Cancelled") {
+      if (status === "Cancelled" && order.orderStatus !== "Cancellation Requested") {
         payload.cancelReason = cancelReason === "Other"
           ? (customReason.trim() || "Cancelled by admin")
           : cancelReason;
@@ -190,11 +191,11 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full appearance-none rounded-2xl py-3 pl-4 pr-8 text-sm font-bold text-white outline-none"
-                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
+                style={{ background: "#fff", border: "1px solid #d5c9b9", color: "#241b16", colorScheme: "light" }}
               >
-                {STATUSES.map((s) => <option key={s} style={{ background: "#1a1040", color: "#fff" }}>{s}</option>)}
+                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#756f66]" />
             </div>
             <button
               onClick={save}
@@ -206,7 +207,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
             </button>
           </div>
 
-          {status === "Cancelled" && order.orderStatus !== "Cancelled" && (
+          {status === "Cancelled" && order.orderStatus !== "Cancelled" && order.orderStatus !== "Cancellation Requested" && (
             <div className="mt-4 space-y-2">
               <p className="text-[10px] font-black uppercase tracking-[0.15em] text-red-400">Cancel Reason (shown to customer)</p>
               <div className="space-y-1.5">
