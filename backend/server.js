@@ -29,7 +29,8 @@ app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/store", require("./routes/storeRoutes"));
 
 app.get("/api/version", (req, res) => {
-  res.json({ version: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local" });
+  const { configured: mailConfigured } = require("./utils/mailer");
+  res.json({ version: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local", mailConfigured: mailConfigured() });
 });
 
 app.get("/", (req, res) => {

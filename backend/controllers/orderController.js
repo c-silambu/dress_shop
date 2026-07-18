@@ -91,8 +91,13 @@ exports.create=async(req,res)=>{
     const order=await Order.create({...req.body,items,subtotal,discount,couponCode,amount,paymentStatus,razorpayPaymentId,user:req.user._id});
     for(const item of items) await Product.findOneAndUpdate({_id:item.product,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity,soldCount:item.quantity}});
     if(couponCode)await Coupon.updateOne({code:couponCode},{$inc:{usedCount:1}});
-    try{if(await sendOrderConfirmation(order,req.user)){order.confirmationEmailSentAt=new Date();await order.save()}}catch(mailError){console.error('Order confirmation email failed:',mailError.message)}
     res.status(201).json(order);
+    // Do not keep checkout waiting for SMTP. The order is already safely stored,
+    // so send and record the confirmation independently after responding.
+    setImmediate(async()=>{
+      try{if(await sendOrderConfirmation(order,req.user)){order.confirmationEmailSentAt=new Date();await order.save()}}
+      catch(mailError){console.error('Order confirmation email failed:',mailError.message)}
+    });
   }catch(e){res.status(500).json({message:e.message})}
 };
 

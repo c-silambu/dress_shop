@@ -12,9 +12,10 @@ const configured = () => {
 
 const transport = () => {
   const auth = credentials();
-  if (!process.env.SMTP_HOST) return nodemailer.createTransport({ service: 'gmail', auth });
+  const timeouts = { connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 20000 };
+  if (!process.env.SMTP_HOST) return nodemailer.createTransport({ service: 'gmail', auth, ...timeouts });
   const port = Number(process.env.SMTP_PORT || 587);
-  return nodemailer.createTransport({ host: process.env.SMTP_HOST, port, secure: port === 465, auth });
+  return nodemailer.createTransport({ host: process.env.SMTP_HOST, port, secure: port === 465, auth, ...timeouts });
 };
 
 const sendMail = (options) => {
