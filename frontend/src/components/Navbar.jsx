@@ -3,8 +3,8 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Heart, Home, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 
 const menuItems = [
-  { name: "Home", path: "/" }, { name: "New", path: "/dress" },
-  { name: "Shop", path: "/dress" }, { name: "Jewellery", path: "/jewellery" },
+  { name: "Home", path: "/" },
+  { name: "Dresses", path: "/dress" }, { name: "Jewellery", path: "/jewellery" },
   { name: "About Us", path: "/about" },
 ];
 
