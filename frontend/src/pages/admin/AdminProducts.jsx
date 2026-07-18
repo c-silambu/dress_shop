@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ImagePlus, Pencil, Search, SlidersHorizontal, Trash2, X, Sparkles, Package } from "lucide-react";
 import api, { imgUrl } from "../../api/api";
 
-const initialForm = { mainCategory: "Women's Dress", status: "Active" };
+const initialForm = { mainCategory: "", subCategory: "", sizes: "", colors: "", materialType: "", fabric: "", pattern: "", status: "Active", countryOfOrigin: "India", lowStockThreshold: 5, newArrival: true };
+const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+const jewellerySizeOptions = ["4", "5", "6", "7", "8", "9", "10", "11", "12", "Free Size"];
 
 const inputStyle = {
   background: "rgba(255,255,255,0.06)",
@@ -30,36 +32,67 @@ function GlassInput({ as: Tag = "input", style: extraStyle = {}, ...props }) {
 export default function AdminProducts() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([null, null, null]);
+  const [imageUrls, setImageUrls] = useState(["", "", ""]);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("");
   const [filterSub, setFilterSub] = useState("");
   const [preview, setPreview] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [message, setMessage] = useState("");
 
   const loadProducts = () => api.get("/products").then((r) => setItems(r.data)).catch(() => setItems([]));
-  useEffect(() => { loadProducts(); }, []);
+  const loadCategories = () => api.get("/store/admin/catalog").then((r) => setCategories(r.data.categories || [])).catch(() => setCategories([]));
+  useEffect(() => { loadProducts(); loadCategories(); }, []);
   useEffect(() => { setFilterSub(""); }, [filterCat]);
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
-  const handleFiles = (e) => {
-    setFiles(e.target.files);
-    setPreview(Array.from(e.target.files).map((f) => URL.createObjectURL(f)));
+  const handleFile = (index, file) => {
+    if (!file) return;
+    setMessage("");
+    setFiles((current) => current.map((item, itemIndex) => itemIndex === index ? file : item));
+    setPreview((current) => {
+      const next = [...current];
+      next[index] = URL.createObjectURL(file);
+      return next;
+    });
+  };
+
+  const toggleSize = (size) => {
+    const selected = String(form.sizes || "").split(",").map((value) => value.trim()).filter(Boolean);
+    const next = selected.includes(size) ? selected.filter((value) => value !== size) : [...selected, size];
+    setForm((current) => ({ ...current, sizes: next.join(",") }));
   };
 
   const saveProduct = async (e) => {
     e.preventDefault();
+    const jewelleryProduct = /jewell?ery/i.test(form.mainCategory || "");
+    const selectedSizes = String(form.sizes || "").split(",").map((value) => value.trim()).filter(Boolean);
+    if (!selectedSizes.length) return setMessage(jewelleryProduct ? "Select a jewellery size or Free Size" : "Select at least one dress size");
+    if (jewelleryProduct && !String(form.materialType || "").trim()) return setMessage("Material type is required for jewellery");
+    if (!jewelleryProduct && !String(form.colors || "").trim()) return setMessage("At least one colour is required for dresses");
+    if (!jewelleryProduct && (!String(form.fabric || "").trim() || !String(form.pattern || "").trim())) return setMessage("Fabric and pattern are required for dresses");
+    if (!form._id && files.some((file, index) => !file && !imageUrls[index].trim())) return setMessage("Add a file or URL for Image 1, Image 2 and Image 3");
+    setMessage("");
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    Array.from(files).forEach((f) => fd.append("images", f));
-    if (form._id) await api.put(`/products/${form._id}`, fd);
-    else await api.post("/products", fd);
-    setForm(initialForm); setFiles([]); setPreview([]); setShowForm(false);
-    loadProducts();
+    imageUrls.filter((url, index) => url.trim() && !files[index]).forEach((url) => fd.append("images", url.trim()));
+    files.filter(Boolean).forEach((file) => fd.append("images", file));
+    try {
+      if (form._id) await api.put(`/products/${form._id}`, fd);
+      else await api.post("/products", fd);
+      setForm(initialForm); setFiles([null, null, null]); setImageUrls(["", "", ""]); setPreview([]); setShowForm(false);
+      loadProducts();
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Unable to save product");
+    }
   };
 
   const editProduct = (p) => {
     setForm({ ...p, sizes: p.sizes?.join(", "), colors: p.colors?.join(", ") });
+    setFiles([null, null, null]);
+    setImageUrls(["", "", ""]);
     setPreview(p.images || []);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -73,6 +106,10 @@ export default function AdminProducts() {
     if (!filterCat) return [];
     return [...new Set(items.filter((p) => filterCat === "Jewellery" ? p.mainCategory?.toLowerCase().includes("jewellery") : p.mainCategory?.toLowerCase().includes("dress")).map((p) => p.subCategory).filter(Boolean))];
   }, [filterCat, items]);
+
+  const mainCategories = useMemo(() => categories.filter((category) => !category.parent && category.active !== false), [categories]);
+  const formSubCategories = useMemo(() => categories.filter((category) => category.parent === form.mainCategory && category.active !== false), [categories, form.mainCategory]);
+  const isJewellery = /jewell?ery/i.test(form.mainCategory || "");
 
   const filtered = useMemo(() => items.filter((p) => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
@@ -98,7 +135,7 @@ export default function AdminProducts() {
           <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{items.length} products in store</p>
         </div>
         <button
-          onClick={() => { setForm(initialForm); setPreview([]); setShowForm((v) => !v); }}
+          onClick={() => { setForm(initialForm); setFiles([null, null, null]); setImageUrls(["", "", ""]); setPreview([]); setMessage(""); setShowForm((v) => !v); }}
           className="flex items-center gap-2 self-start rounded-2xl px-5 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 sm:self-auto"
           style={{ background: showForm ? "rgba(239,68,68,0.2)" : "linear-gradient(135deg,#3b82f6,#06b6d4)", border: showForm ? "1px solid rgba(239,68,68,0.3)" : "none", boxShadow: showForm ? "none" : "0 8px 20px rgba(59,130,246,0.3)" }}
         >
@@ -116,25 +153,53 @@ export default function AdminProducts() {
             </button>
           </div>
           <form onSubmit={saveProduct} className="space-y-4">
+            {message && <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-bold text-red-300">{message}</p>}
+            {!mainCategories.length && <p className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">Add a main category and its subcategories in Catalogue &amp; Offers before adding a product.</p>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {[["name","Product name"],["subCategory","Sub category"],["price","Price"],["discountPrice","Discount price"],["sizes","Sizes (comma separated)"],["colors","Colors (comma separated)"],["stock","Stock"]].map(([field, label]) => (
-                <GlassInput key={field} name={field} value={form[field] || ""} onChange={handleChange} placeholder={label} required={["name","price"].includes(field)} />
-              ))}
-              <GlassInput as="select" name="mainCategory" value={form.mainCategory} onChange={handleChange}>
-                <option style={{ background: "#1a1040" }} value="Women's Dress">Women's Dress</option>
-                <option style={{ background: "#1a1040" }} value="Jewellery">Jewellery</option>
+              <GlassInput name="name" value={form.name || ""} onChange={handleChange} placeholder="Product name" required />
+              <GlassInput name="brand" value={form.brand || ""} onChange={handleChange} placeholder="Brand" required />
+              <GlassInput as="select" name="mainCategory" value={form.mainCategory} onChange={(e) => setForm((current) => ({ ...current, mainCategory: e.target.value, subCategory: "", sizes: "", colors: "", fabric: "", pattern: "", materialType: "" }))} required>
+                <option style={{ background: "#1a1040" }} value="">Select category</option>
+                {mainCategories.map((category) => <option key={category._id} style={{ background: "#1a1040" }} value={category.name}>{category.name}</option>)}
               </GlassInput>
+              <GlassInput as="select" name="subCategory" value={form.subCategory} onChange={handleChange} required disabled={!form.mainCategory}>
+                <option style={{ background: "#1a1040" }} value="">Select subcategory</option>
+                {formSubCategories.map((category) => <option key={category._id} style={{ background: "#1a1040" }} value={category.name}>{category.name}</option>)}
+              </GlassInput>
+              <GlassInput name="price" type="number" min="0" step="0.01" value={form.price || ""} onChange={handleChange} placeholder="Actual price" required />
+              <GlassInput name="discountPrice" type="number" min="0" step="0.01" value={form.discountPrice || ""} onChange={handleChange} placeholder="Discount price" />
+              {!isJewellery && <GlassInput name="colors" value={form.colors || ""} onChange={handleChange} placeholder="Colors: Red, Blue, Black" required />}
+              {isJewellery && <GlassInput name="materialType" value={form.materialType || ""} onChange={handleChange} placeholder="Material type: Gold, Silver, Brass..." required />}
+              {[["stock","Stock"],["lowStockThreshold","Low-stock alert"],...(!isJewellery ? [["fabric","Fabric"],["pattern","Pattern"]] : []),["countryOfOrigin","Country of origin"]].map(([field, label]) => (
+                <GlassInput key={field} name={field} value={form[field] || ""} onChange={handleChange} placeholder={label} type={["stock","lowStockThreshold"].includes(field) ? "number" : "text"} required={["fabric","pattern"].includes(field)} />
+              ))}
               <GlassInput as="select" name="status" value={form.status} onChange={handleChange}>
                 <option style={{ background: "#1a1040" }} value="Active">Active</option>
                 <option style={{ background: "#1a1040" }} value="Inactive">Inactive</option>
+                <option style={{ background: "#1a1040" }} value="Draft">Draft</option>
               </GlassInput>
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-blue-300">Images</label>
-                <input type="file" multiple onChange={handleFiles} className="w-full text-xs text-white/50 file:mr-3 file:rounded-xl file:border-0 file:px-3 file:py-2 file:text-xs file:font-bold file:text-white" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "0.875rem", padding: "0.5rem" }} />
-              </div>
             </div>
-            <GlassInput as="textarea" name="about" value={form.about || ""} onChange={handleChange} placeholder="About product" style={{ ...inputStyle, resize: "none" }} rows={2} />
-            <GlassInput as="textarea" name="description" value={form.description || ""} onChange={handleChange} placeholder="Description" style={{ ...inputStyle, resize: "none" }} rows={2} />
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[0, 1, 2].map((index) => <div key={index}>
+                <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-blue-300">Image {index + 1}</label>
+                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleFile(index, e.target.files?.[0])} className="w-full text-xs text-white/50 file:mr-2 file:rounded-xl file:border-0 file:px-3 file:py-2 file:text-xs file:font-bold file:text-white" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "0.875rem", padding: "0.5rem" }} />
+                <p className="my-2 text-center text-[10px] font-black uppercase text-white/30">or paste URL</p>
+                <input type="url" value={imageUrls[index]} disabled={!!files[index]} onChange={(e) => { const next=[...imageUrls]; next[index]=e.target.value; setImageUrls(next); const previews=[...preview]; previews[index]=e.target.value; setPreview(previews); }} placeholder={`Image ${index + 1} URL`} className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-xs text-white outline-none disabled:opacity-40" />
+              </div>)}
+            </div>
+            <div>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-blue-300">{isJewellery ? "Jewellery size / number" : "Available dress sizes"} <span className="text-red-300">*</span></label>
+              <div className="flex flex-wrap gap-2">{(isJewellery ? jewellerySizeOptions : sizeOptions).map((size) => {
+                const selected = String(form.sizes || "").split(",").includes(size);
+                return <button key={size} type="button" onClick={() => toggleSize(size)} className={`rounded-xl border px-4 py-2 text-xs font-black ${selected ? "border-blue-400 bg-blue-500 text-white" : "border-white/10 bg-white/5 text-white/60"}`}>{size}</button>;
+              })}</div>
+            </div>
+            <GlassInput as="textarea" name="about" value={form.about || ""} onChange={handleChange} placeholder="About product (short highlights)" style={{ ...inputStyle, resize: "none" }} rows={3} required />
+            <GlassInput as="textarea" name="description" value={form.description || ""} onChange={handleChange} placeholder="Detailed product description" style={{ ...inputStyle, resize: "none" }} rows={4} required />
+            {!isJewellery && <GlassInput as="textarea" name="washCare" value={form.washCare || ""} onChange={handleChange} placeholder="Wash-care instructions" style={{ ...inputStyle, resize: "none" }} rows={2} />}
+            <div className="flex flex-wrap gap-5">
+              {[["featured","Featured"],["bestseller","Bestseller"],["newArrival","New arrival"]].map(([key,label]) => <label key={key} className="flex items-center gap-2 text-sm font-bold text-white/70"><input type="checkbox" checked={!!form[key]} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.checked }))} />{label}</label>)}
+            </div>
 
             {!!preview.length && (
               <div className="flex flex-wrap gap-2">

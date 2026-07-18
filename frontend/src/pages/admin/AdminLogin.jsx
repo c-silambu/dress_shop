@@ -26,8 +26,8 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0f0d0a] p-4">
-      <div className="grid w-full max-w-5xl overflow-hidden border border-white/10 bg-[#15120f] md:grid-cols-[1fr_430px]">
+    <div className="admin-login flex min-h-screen items-center justify-center bg-[#0f0d0a] p-4">
+      <div className="admin-login-card grid w-full max-w-5xl overflow-hidden border border-white/10 bg-[#15120f] md:grid-cols-[1fr_430px]">
         <div className="hidden p-10 md:flex md:flex-col md:justify-between">
           <div>
             <div className="flex items-center gap-3">

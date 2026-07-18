@@ -66,11 +66,11 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
   const glassPanel = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "1.25rem" };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}>
-      <div className="flex max-h-[93vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl sm:rounded-3xl" style={{ background: "linear-gradient(160deg,#1a0a3e 0%,#0f172a 100%)", border: "1px solid rgba(139,92,246,0.25)", boxShadow: "0 40px 80px rgba(0,0,0,0.6)" }}>
+    <div className="admin-order-modal fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}>
+      <div className="admin-order-dialog flex max-h-[93vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl sm:rounded-3xl" style={{ background: "linear-gradient(160deg,#1a0a3e 0%,#0f172a 100%)", border: "1px solid rgba(139,92,246,0.25)", boxShadow: "0 40px 80px rgba(0,0,0,0.6)" }}>
 
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between px-5 py-4" style={{ background: "linear-gradient(135deg,rgba(124,58,237,0.4),rgba(168,85,247,0.2))", borderBottom: "1px solid rgba(139,92,246,0.2)" }}>
+        <div className="admin-order-header flex shrink-0 items-center justify-between px-5 py-4" style={{ background: "linear-gradient(135deg,rgba(124,58,237,0.4),rgba(168,85,247,0.2))", borderBottom: "1px solid rgba(139,92,246,0.2)" }}>
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">Order Details</p>
             <p className="text-lg font-black text-white">#{order._id?.slice(-8).toUpperCase()}</p>
@@ -81,10 +81,10 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
         </div>
 
         {/* Body */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-5">
+        <div className="admin-order-body flex-1 space-y-4 overflow-y-auto p-5">
 
           {/* Customer */}
-          <div style={glassPanel} className="p-4 space-y-3">
+          <div style={glassPanel} className="admin-order-customer p-4 space-y-3">
             <p className="text-[10px] font-black uppercase tracking-[0.15em] text-violet-300">Customer</p>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
@@ -104,7 +104,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
           </div>
 
           {/* Products */}
-          <div>
+          <div className="admin-order-products">
             <p className="mb-2 text-[10px] font-black uppercase tracking-[0.15em] text-violet-300">Products ({order.items?.length || 0})</p>
             <div className="space-y-2">
               {order.items?.map((item, i) => (
@@ -132,7 +132,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
 
           {/* Address */}
           {order.address && (
-            <div style={glassPanel} className="p-4">
+            <div style={glassPanel} className="admin-order-address p-4">
               <p className="mb-3 text-[10px] font-black uppercase tracking-[0.15em] text-violet-300">Delivery Address</p>
               <div className="flex gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
@@ -149,7 +149,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
           )}
 
           {/* Payment */}
-          <div style={glassPanel} className="flex items-center justify-between p-4">
+          <div style={glassPanel} className="admin-order-payment flex items-center justify-between p-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-blue-400" />
               <span className="text-sm font-bold text-white">{order.paymentMethod}</span>
@@ -164,7 +164,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
 
           {/* Cancel reason (already cancelled) */}
           {order.orderStatus === "Cancelled" && order.cancelReason && (
-            <div className="p-4" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "1.25rem" }}>
+            <div className="admin-order-cancel p-4" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "1.25rem" }}>
               <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-red-400">Cancel Reason</p>
               <div className="flex items-start gap-2">
                 <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
@@ -182,7 +182,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 p-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)" }}>
+        <div className="admin-order-footer shrink-0 p-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)" }}>
           <p className="mb-2 text-[10px] font-black uppercase tracking-[0.15em] text-violet-300">Update Status</p>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -274,7 +274,7 @@ export default function AdminOrders() {
   const glassCard = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(20px)" };
 
   return (
-    <div className="space-y-5 pb-24 lg:pb-8">
+    <div className="admin-orders-page space-y-5 pb-24 lg:pb-8">
 
       {/* Header */}
       <div className="flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between" style={{ background: "linear-gradient(135deg,rgba(16,185,129,0.2),rgba(5,150,105,0.1))", border: "1px solid rgba(16,185,129,0.25)" }}>
@@ -343,14 +343,14 @@ export default function AdminOrders() {
           <p className="mt-3 font-black" style={{ color: "rgba(255,255,255,0.2)" }}>No orders found</p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="admin-orders-list space-y-2.5">
           {filtered.map((order) => {
             const st = STATUS_STYLE[order.orderStatus] || STATUS_STYLE["Order Placed"];
             return (
               <button
                 key={order._id}
                 onClick={() => setSelected(order)}
-                className="group w-full rounded-2xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5"
+                className="admin-order-row group w-full rounded-2xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5"
                 style={{ ...glassCard, borderRadius: "1rem" }}
               >
                 <div className="flex items-center justify-between gap-3">

@@ -15,7 +15,7 @@ export default function Cart() {
   const removeItem = async (id) => { await api.delete(`/cart/${id}`); loadCart(); };
 
   return (
-    <section className="page-shell">
+    <section className="page-shell luxury-account luxury-cart">
       <div className="border-b border-[#e9e0d7] bg-white">
         <div className="section-wrap py-9 md:py-12">
           <p className="editorial-kicker">Shopping Bag</p>
@@ -40,10 +40,10 @@ export default function Cart() {
             <button onClick={() => navigate("/dress")} className="btn-primary mt-6">Start Shopping</button>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[1fr_390px]">
-            <div className="space-y-4">
+          <div className="cart-layout grid gap-8 lg:grid-cols-[1fr_390px]">
+            <div className="cart-items space-y-4">
               {items.map((item) => (
-                <div key={item._id} className="grid grid-cols-[92px_1fr] gap-4 border border-[#e9e0d7] bg-white p-3 md:grid-cols-[132px_1fr] md:p-4">
+                <div key={item._id} className="cart-item grid grid-cols-[92px_1fr] gap-4 border border-[#e9e0d7] bg-white p-3 md:grid-cols-[132px_1fr] md:p-4">
                   <img src={imgUrl(item.product?.images?.[0])} alt={item.product?.name} className="h-28 w-full object-cover product-image-bg md:h-36" />
                   <div className="flex min-w-0 flex-col justify-between">
                     <div>
@@ -52,6 +52,7 @@ export default function Cart() {
                       <p className="mt-2 text-sm font-black text-[#a91d4b]">
                         Rs. {Number(item.product?.discountPrice || item.product?.price || 0).toLocaleString("en-IN")}
                       </p>
+                      {(item.size || item.color) && <p className="mt-1 text-xs font-bold text-[#756f66]">{item.size && `Size: ${item.size}`}{item.size && item.color && " · "}{item.color && `Color: ${item.color}`}</p>}
                     </div>
                     <div className="mt-4 flex items-center gap-3">
                       <div className="flex items-center border border-[#e9e0d7] bg-[#fbfaf7]">
@@ -68,7 +69,7 @@ export default function Cart() {
               ))}
             </div>
 
-            <aside className="h-fit border border-[#e9e0d7] bg-white p-6">
+            <aside className="cart-summary h-fit border border-[#e9e0d7] bg-white p-6">
               <h2 className="text-2xl font-black text-[#15120f]">Order summary</h2>
               <div className="mt-6 space-y-4 text-sm">
                 <div className="flex justify-between text-[#756f66]"><span>Subtotal</span><span className="font-black text-[#15120f]">Rs. {total.toLocaleString("en-IN")}</span></div>

@@ -113,7 +113,7 @@ function OrderCard({ order, onCancelled }) {
 
   return (
     <>
-      <div className="border border-[#e9e0d7] bg-white">
+      <div className="order-card border border-[#e9e0d7] bg-white">
         <div className="flex items-start justify-between gap-3 p-5">
           <div>
             <p className="editorial-kicker text-[9px]">Order ID</p>
@@ -204,7 +204,7 @@ export default function Orders() {
   useEffect(() => { load(); }, []);
 
   return (
-    <section className="page-shell">
+    <section className="page-shell luxury-account luxury-orders">
       <div className="border-b border-[#e9e0d7] bg-white">
         <div className="section-wrap py-10 md:py-14">
           <p className="editorial-kicker">Account History</p>
@@ -213,7 +213,7 @@ export default function Orders() {
         </div>
       </div>
 
-      <div className="section-wrap max-w-3xl py-8">
+      <div className="orders-list section-wrap max-w-3xl py-8">
         {loading ? (
           <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-36 animate-pulse bg-[#eee5dc]" />)}</div>
         ) : !orders.length ? (

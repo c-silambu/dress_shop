@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Lock, Mail, Phone, Sparkles, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Auth({ registerMode = false }) {
   const [isRegister, setIsRegister] = useState(registerMode);
   const [form, setForm] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
@@ -14,21 +16,26 @@ export default function Auth({ registerMode = false }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
+    setLoading(true);
     try {
       if (isRegister) await register(form);
-      else await login(form.phone, form.password);
+      else await login(form.identifier, form.password);
       navigate("/");
     } catch (error) {
-      alert(error.response?.data?.message || "Authentication failed");
+      setError(error.response?.data?.message || "Unable to connect. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fields = [
     ...(isRegister ? [
       { name: "name", placeholder: "User name", icon: User, required: true },
-      { name: "email", placeholder: "Email", icon: Mail, required: false },
+      { name: "email", placeholder: "Email", icon: Mail, required: true },
+      { name: "phone", placeholder: "Phone number", icon: Phone, required: true },
     ] : []),
-    { name: "phone", placeholder: "Phone number", icon: Phone, required: true },
+    ...(!isRegister ? [{ name: "identifier", placeholder: "Email or phone number", icon: Mail, required: true }] : []),
   ];
 
   return (
@@ -59,14 +66,14 @@ export default function Auth({ registerMode = false }) {
             </div>
             <p className="editorial-kicker">Account</p>
             <h2 className="mt-3 text-4xl font-black text-[#15120f]">{isRegister ? "Register" : "Login"}</h2>
-            <p className="mt-2 text-sm text-[#756f66]">{isRegister ? "Create your account and start shopping" : "Enter phone number and password"}</p>
+            <p className="mt-2 text-sm text-[#756f66]">{isRegister ? "Create your account and start shopping" : "Enter email or phone number and password"}</p>
           </div>
 
           <div className="space-y-4">
             {fields.map(({ name, placeholder, icon: Icon, required }) => (
               <div key={name} className="relative">
                 <Icon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a91d4b]" />
-                <input name={name} onChange={handleChange} placeholder={placeholder} className="input input-with-leading-icon" required={required} />
+                <input name={name} onChange={handleChange} placeholder={placeholder} className="input input-with-leading-icon" required={required} inputMode={name === "phone" ? "numeric" : undefined} autoComplete={name === "phone" ? "tel" : name} />
               </div>
             ))}
 
@@ -84,9 +91,12 @@ export default function Auth({ registerMode = false }) {
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
+            {!isRegister && <div className="text-right"><Link to="/forgot-password" className="text-sm font-bold text-[#a91d4b] hover:underline">Forgot password?</Link></div>}
           </div>
 
-          <button className="btn-primary mt-6 w-full">{isRegister ? "Create Account" : "Login"}</button>
+          {error && <div role="alert" className="mt-4 border border-[#e6b8c5] bg-[#fff1f5] px-4 py-3 text-sm font-bold text-[#8f163d]">{error}</div>}
+
+          <button disabled={loading} className="btn-primary mt-6 w-full disabled:opacity-60">{loading ? "Please wait..." : isRegister ? "Create Account" : "Login"}</button>
           <button type="button" onClick={() => setIsRegister((value) => !value)} className="btn-soft mt-3 w-full">
             {isRegister ? "Already have an account? Login" : "New user? Create account"}
           </button>

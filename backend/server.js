@@ -26,6 +26,7 @@ app.use("/api/cart", require("./routes/cartRoutes"));
 app.use("/api/favourites", require("./routes/favouriteRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/payment", require("./routes/paymentRoutes"));
+app.use("/api/store", require("./routes/storeRoutes"));
 
 app.get("/", (req, res) => {
   res.json({ message: "Women’s Styles API running" });

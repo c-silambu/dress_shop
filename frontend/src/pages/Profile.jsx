@@ -18,7 +18,7 @@ export default function Profile() {
   ];
 
   return (
-    <section className="page-shell">
+    <section className="page-shell luxury-account luxury-profile">
       <div className="border-b border-[#e9e0d7] bg-white">
         <div className="section-wrap py-10 md:py-14">
           <p className="editorial-kicker">Member Account</p>
@@ -27,7 +27,7 @@ export default function Profile() {
       </div>
 
       <div className="section-wrap grid gap-6 py-8 md:grid-cols-[360px_1fr] md:py-12">
-        <aside className="fashion-panel p-6">
+        <aside className="profile-identity fashion-panel p-6">
           <div className="flex items-center gap-4">
             <div className="flex h-20 w-20 items-center justify-center bg-[#15120f] text-2xl font-black text-white">
               {initials}
@@ -52,7 +52,7 @@ export default function Profile() {
           </div>
         </aside>
 
-        <div className="space-y-3">
+        <div className="profile-menu space-y-3">
           {menuItems.map(({ icon: Icon, label, sub, action }) => (
             <button
               key={label}

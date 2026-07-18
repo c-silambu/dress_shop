@@ -2,6 +2,7 @@ const Order=require('../models/Order');
 const Product=require('../models/Product');
 const User=require('../models/User');
 const mongoose=require('mongoose');
+const jwt=require('jsonwebtoken');
 
 const restockOrderItems=async(items=[])=>{
   for(const item of items){
@@ -30,9 +31,21 @@ const findUserOrderByDisplayId=async(rawId,userId)=>{
 
 exports.create=async(req,res)=>{
   try{
-    const order=await Order.create({...req.body,user:req.user._id});
-    for(const item of req.body.items||[])
-      await Product.findByIdAndUpdate(item.product,{$inc:{stock:-item.quantity}});
+    if(!Array.isArray(req.body.items)||!req.body.items.length)return res.status(400).json({message:'Your cart is empty'});
+    const items=[];let amount=0;
+    for(const raw of req.body.items){const product=await Product.findById(raw.product);const quantity=Math.max(1,Number(raw.quantity||1));if(!product||product.status!=='Active')return res.status(400).json({message:'A product is unavailable'});if(product.stock<quantity)return res.status(400).json({message:`Only ${product.stock} of ${product.name} available`});if(product.sizes.length&&!product.sizes.includes(raw.size))return res.status(400).json({message:`Select a valid size for ${product.name}`});if(product.colors.length&&!product.colors.includes(raw.color))return res.status(400).json({message:`Select a valid colour for ${product.name}`});const price=Number(product.discountPrice||product.price);amount+=price*quantity;items.push({product:product._id,name:product.name,price,quantity,size:raw.size,color:raw.color,image:product.images?.[0]})}
+    let paymentStatus='Pending';
+    let razorpayPaymentId;
+    if(req.body.paymentMethod==='Razorpay'){
+      try{
+        const proof=jwt.verify(String(req.body.paymentProof||''),process.env.JWT_SECRET);
+        if(Number(proof.amount)!==Math.round(amount*100)) return res.status(400).json({message:'Paid amount does not match order total'});
+        paymentStatus='Paid';
+        razorpayPaymentId=proof.paymentId;
+      }catch(error){return res.status(400).json({message:'Valid Razorpay payment confirmation is required'})}
+    }
+    const order=await Order.create({...req.body,items,amount,paymentStatus,razorpayPaymentId,user:req.user._id});
+    for(const item of items) await Product.findOneAndUpdate({_id:item.product,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity,soldCount:item.quantity}});
     res.status(201).json(order);
   }catch(e){res.status(500).json({message:e.message})}
 };

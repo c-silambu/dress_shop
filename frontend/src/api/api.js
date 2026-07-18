@@ -21,6 +21,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isAdminPage = window.location.pathname.startsWith("/admin");
+    const isLoginRequest = error.config?.url?.includes("/admin/login");
+
+    if (error.response?.status === 401 && isAdminPage && !isLoginRequest) {
+      localStorage.removeItem("adminToken");
+      if (window.location.pathname !== "/admin/login") {
+        window.location.replace("/admin/login");
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const imgUrl = (path) => {
   if (!path) {
     return "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80";

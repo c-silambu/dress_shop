@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { BarChart3, ChevronRight, LogOut, Menu, Package, ShoppingBag, Users, X } from "lucide-react";
+import { BarChart3, ChevronRight, LogOut, Menu, Package, ShoppingBag, Users, X, Tags, Store } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const links = [
   { label: "Dashboard", to: "/admin", icon: BarChart3 },
+  { label: "Categories", to: "/admin/categories", icon: Tags },
   { label: "Products", to: "/admin/products", icon: Package },
   { label: "Orders", to: "/admin/orders", icon: ShoppingBag },
   { label: "Users", to: "/admin/users", icon: Users },
+  { label: "Store & Offers", to: "/admin/commerce", icon: Store },
 ];
 
 export default function AdminLayout() {
@@ -40,8 +42,8 @@ export default function AdminLayout() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0f0d0a] text-white">
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-white/10 lg:bg-[#15120f]">
+    <div className="admin-shell min-h-screen bg-[#0f0d0a] text-white">
+      <aside className="admin-sidebar hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-white/10 lg:bg-[#15120f]">
         <Link to="/admin" className="flex items-center gap-3 px-6 py-7">
           <img src="/logo.png" alt="Women's Styles" className="h-12 w-12 rounded-full bg-white object-cover p-1" />
           <div>
@@ -50,7 +52,7 @@ export default function AdminLayout() {
           </div>
         </Link>
 
-        <nav className="flex-1 space-y-2 px-4">{navItems()}</nav>
+        <nav className="flex-1 space-y-2 overflow-y-auto px-4">{navItems()}<Link to="/" className="flex items-center gap-3 border border-white/10 px-4 py-3.5 text-sm font-black text-white/60"><Store className="h-5 w-5"/>View Storefront</Link></nav>
 
         <div className="p-4">
           <button onClick={logout} className="flex w-full items-center gap-3 border border-white/10 px-4 py-3.5 text-sm font-black text-white/58 transition hover:border-[#a91d4b] hover:text-[#ff9bb7]">
@@ -87,8 +89,8 @@ export default function AdminLayout() {
         </div>
       )}
 
-      <main className="min-h-screen lg:pl-72">
-        <div className="p-4 pb-24 md:p-8 lg:pb-8">
+      <main className="admin-main min-h-screen lg:pl-72">
+        <div className="admin-content p-4 pb-24 md:p-8 lg:pb-8">
           <Outlet />
         </div>
       </main>

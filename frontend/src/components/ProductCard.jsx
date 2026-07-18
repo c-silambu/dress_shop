@@ -1,33 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingBag, Zap } from "lucide-react";
 import api, { imgUrl } from "../api/api";
+import { useToast } from "../context/ToastContext";
 
 export default function ProductCard({ p }) {
   const navigate = useNavigate();
+  const toast = useToast();
+  const [cartState, setCartState] = useState("idle");
   const price = Number(p.discountPrice || p.price || 0);
   const mrp = Number(p.price || 0);
   const discount = p.discountPrice && mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
 
   const addToCart = async (e) => {
     e.preventDefault();
-    await api.post("/cart", { product: p._id, quantity: 1 });
-    alert("Added to cart");
+    if (p.sizes?.length || p.colors?.length) { navigate(`/product/${p._id}`); return; }
+    try { setCartState("adding"); await api.post("/cart", { product: p._id, quantity: 1 }); setCartState("added"); setTimeout(() => setCartState("idle"), 1800); }
+    catch (error) { setCartState("idle"); if (error.response?.status === 401) navigate("/login"); else toast.error(error.response?.data?.message || "Unable to add to cart"); }
   };
 
   const addToFavourite = async (e) => {
     e.preventDefault();
-    await api.post("/favourites", { product: p._id });
-    alert("Added to favourite");
+    try { await api.post("/favourites", { product: p._id }); toast.success("Added to wishlist"); }
+    catch (error) { if (error.response?.status === 401) navigate("/login"); else toast.error("Unable to add to wishlist"); }
   };
 
   const buyNow = (e) => {
     e.preventDefault();
+    if (p.sizes?.length || p.colors?.length) { navigate(`/product/${p._id}`); return; }
     navigate("/checkout", { state: { buyNow: p } });
   };
 
   return (
-    <Link to={`/product/${p._id}`} className="group block">
+    <Link to={`/product/${p._id}`} className="product-card-new group block">
       <div className="relative overflow-hidden product-image-bg" style={{ aspectRatio: "3 / 4" }}>
         <img
           src={imgUrl(p.images?.[0])}
@@ -49,12 +54,12 @@ export default function ProductCard({ p }) {
           <Heart className="h-4 w-4" />
         </button>
 
-        <div className="absolute inset-x-4 bottom-4 flex translate-y-4 flex-col gap-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <button onClick={addToCart} className="btn-primary w-full py-3 text-[10px]">
-            <ShoppingBag className="h-3.5 w-3.5" /> Add Cart
+        <div className="product-card-actions">
+          <button onClick={addToCart} disabled={cartState === "adding"} className="product-card-cart">
+            <ShoppingBag /> {cartState === "adding" ? "Adding..." : cartState === "added" ? "Added to Bag ✓" : "Add to Cart"}
           </button>
-          <button onClick={buyNow} className="btn-soft w-full bg-white py-3 text-[10px]">
-            <Zap className="h-3.5 w-3.5" /> Buy Now
+          <button onClick={buyNow} className="product-card-buy">
+            <Zap /> Buy Now
           </button>
         </div>
       </div>
