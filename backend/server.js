@@ -28,6 +28,10 @@ app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/store", require("./routes/storeRoutes"));
 
+app.get("/api/version", (req, res) => {
+  res.json({ version: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local" });
+});
+
 app.get("/", (req, res) => {
   res.json({ message: "Women’s Styles API running" });
 });
