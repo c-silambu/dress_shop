@@ -16,17 +16,22 @@ exports.createOrder=async(req,res)=>{
 };
 
 exports.verify=async(req,res)=>{
-  if(!configured()) return res.status(503).json({message:'Razorpay is not configured'});
-  const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=req.body;
-  if(!razorpay_order_id||!razorpay_payment_id||!razorpay_signature) return res.status(400).json({message:'Incomplete payment response'});
-  const sign=crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET).update(`${razorpay_order_id}|${razorpay_payment_id}`).digest('hex');
-  const verified=sign.length===razorpay_signature.length&&crypto.timingSafeEqual(Buffer.from(sign),Buffer.from(razorpay_signature));
-  if(!verified) return res.status(400).json({message:'Payment verification failed'});
   try{
+    if(!configured()) return res.status(503).json({message:'Razorpay is not configured'});
+    const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=req.body;
+    if(!razorpay_order_id||!razorpay_payment_id||!razorpay_signature) return res.status(400).json({message:'Incomplete payment response'});
+    const sign=crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET).update(`${razorpay_order_id}|${razorpay_payment_id}`).digest('hex');
+    const supplied=String(razorpay_signature);
+    const verified=sign.length===supplied.length&&crypto.timingSafeEqual(Buffer.from(sign,'utf8'),Buffer.from(supplied,'utf8'));
+    if(!verified) return res.status(400).json({message:'Payment verification failed'});
     const instance=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
     const paymentOrder=await instance.orders.fetch(razorpay_order_id);
-    if(paymentOrder.status!=='paid') return res.status(400).json({message:'Payment is not complete'});
-    const paymentProof=jwt.sign({paymentId:razorpay_payment_id,razorpayOrderId:razorpay_order_id,amount:paymentOrder.amount},process.env.JWT_SECRET,{expiresIn:'15m'});
-    res.json({verified:true,paymentId:razorpay_payment_id,orderId:razorpay_order_id,paymentProof});
-  }catch(e){res.status(502).json({message:'Unable to confirm payment with Razorpay'})}
+    // The signed Checkout callback confirms payment. The parent order can remain
+    // "attempted" briefly while Razorpay finishes capture, so do not reject it.
+    const paymentProof=jwt.sign({paymentId:razorpay_payment_id,razorpayOrderId:razorpay_order_id,amount:Number(paymentOrder.amount)},process.env.JWT_SECRET,{expiresIn:'1h'});
+    res.json({verified:true,paymentId:razorpay_payment_id,orderId:razorpay_order_id,amount:Number(paymentOrder.amount),paymentProof});
+  }catch(e){
+    console.error('Razorpay verification failed:',e.error?.description||e.message);
+    res.status(502).json({message:e.error?.description||'Unable to confirm payment with Razorpay. Please retry order confirmation; you will not be charged again.'});
+  }
 };

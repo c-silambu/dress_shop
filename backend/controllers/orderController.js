@@ -81,6 +81,8 @@ exports.create=async(req,res)=>{
     if(req.body.paymentMethod==='Razorpay'){
       try{
         const proof=jwt.verify(String(req.body.paymentProof||''),process.env.JWT_SECRET);
+        const existingOrder=await Order.findOne({user:req.user._id,razorpayPaymentId:proof.paymentId});
+        if(existingOrder)return res.json(existingOrder);
         if(Number(proof.amount)!==Math.round(amount*100)) return res.status(400).json({message:'Paid amount does not match order total'});
         paymentStatus='Paid';
         razorpayPaymentId=proof.paymentId;
