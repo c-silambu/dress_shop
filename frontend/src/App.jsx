@@ -12,6 +12,7 @@ import Cart from "./pages/Cart";
 import Favourites from "./pages/Favourites";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
+import OrderSuccess from "./pages/OrderSuccess";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
 import { AdminRoute, UserRoute } from "./routes/ProtectedRoute";
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/favourites" element={<UserLayout><UserRoute><Favourites /></UserRoute></UserLayout>} />
         <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
         <Route path="/orders" element={<UserLayout><UserRoute><Orders /></UserRoute></UserLayout>} />
+        <Route path="/order-success" element={<UserLayout><UserRoute><OrderSuccess /></UserRoute></UserLayout>} />
         <Route path="/profile" element={<UserLayout><UserRoute><Profile /></UserRoute></UserLayout>} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
