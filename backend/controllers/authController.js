@@ -1,8 +1,8 @@
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 const User = require("../models/User");
+const { configured: mailConfigured, logMailError, sendMail } = require("../utils/mailer");
 
 const sign = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 const phoneDigits = (value) => String(value || "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
@@ -45,21 +45,6 @@ exports.login = async (req, res) => {
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
-const mailTransport = () => {
-  const user = process.env.MAIL_USER || process.env.SMTP_USER;
-  const pass = process.env.MAIL_PASS || process.env.SMTP_PASS;
-  if (!process.env.SMTP_HOST) {
-    return nodemailer.createTransport({ service: "gmail", auth: { user, pass } });
-  }
-  const port = Number(process.env.SMTP_PORT || 587);
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth: { user, pass }
-  });
-};
-
 exports.forgotPassword = async (req, res) => {
   try {
     const email = String(req.body.email || "").trim().toLowerCase();
@@ -68,10 +53,12 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     // Always return the same message so registered email addresses cannot be discovered.
     const response = { message: "If an account uses this email, a password reset link has been sent." };
-    if (!user) return res.json(response);
-    const mailUser = process.env.MAIL_USER || process.env.SMTP_USER;
-    const mailPass = process.env.MAIL_PASS || process.env.SMTP_PASS;
-    if (!mailUser || !mailPass) {
+    if (!user) {
+      console.log("[mail] password-reset:account-not-found", { emailDomain: email.split("@")[1] });
+      return res.json(response);
+    }
+    if (!mailConfigured()) {
+      console.error("[mail] password-reset:skipped because the selected mail provider is not fully configured");
       return res.status(503).json({ message: "Password reset email is not configured. Please contact support." });
     }
 
@@ -83,22 +70,29 @@ exports.forgotPassword = async (req, res) => {
     const frontendUrl = String(process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
     const resetUrl = `${frontendUrl}/reset-password/${token}`;
     try {
-      await mailTransport().sendMail({
-        from: process.env.MAIL_FROM ? `${process.env.MAIL_FROM} <${mailUser}>` : mailUser,
+      await sendMail({
         to: user.email,
         subject: "Reset your Women's Styles password",
         text: `Reset your password using this link (valid for 15 minutes): ${resetUrl}`,
         html: `<div style="font-family:Arial,sans-serif;line-height:1.6"><h2>Reset your password</h2><p>This link is valid for 15 minutes.</p><p><a href="${resetUrl}" style="background:#a91d4b;color:#fff;padding:12px 18px;text-decoration:none">Set new password</a></p><p>If you did not request this, you can ignore this email.</p></div>`
       });
+      console.log("[mail] password-reset:sent", { userId: user._id.toString() });
     } catch (mailError) {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
-      await user.save({ validateBeforeSave: false });
-      console.error("Password reset email failed:", mailError.message);
+      try {
+        await user.save({ validateBeforeSave: false });
+      } catch (cleanupError) {
+        console.error("[mail] password-reset:token-cleanup-failed", { userId: user._id.toString(), message: cleanupError.message });
+      }
+      logMailError("password-reset", mailError, { userId: user._id.toString() });
       return res.status(502).json({ message: "Could not send the reset email. Please try again later." });
     }
     res.json(response);
-  } catch (error) { res.status(500).json({ message: "Unable to process password reset right now" }); }
+  } catch (error) {
+    console.error("[mail] password-reset:controller-failed", { message: error.message, code: error.code });
+    res.status(500).json({ message: "Unable to process password reset right now" });
+  }
 };
 
 exports.resetPassword = async (req, res) => {

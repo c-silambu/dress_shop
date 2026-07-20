@@ -5,7 +5,7 @@ const Coupon=require('../models/Coupon');
 const Subscriber=require('../models/Subscriber');
 const mongoose=require('mongoose');
 const jwt=require('jsonwebtoken');
-const {configured:mailConfigured,sendMail}=require('../utils/mailer');
+const {configured:mailConfigured,logMailError,sendMail}=require('../utils/mailer');
 
 const escapeHtml=(value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const money=(value)=>`₹${Number(value||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
@@ -30,9 +30,27 @@ exports.availableCoupons=async(req,res)=>{
   try{const subtotal=Math.max(0,Number(req.query.subtotal||0));const coupons=await Coupon.find({active:true}).sort('-createdAt');const result=[];for(const coupon of coupons){const eligibility=await couponEligibility(coupon,subtotal,req.user);result.push({_id:coupon._id,code:coupon.code,description:coupon.description,type:coupon.type,value:coupon.value,minimumOrder:coupon.minimumOrder,maximumDiscount:coupon.maximumDiscount,expiryDate:coupon.expiryDate,...eligibility})}res.json(result)}catch(error){console.error('Available coupons failed:',error.message);res.status(500).json({message:'Unable to load coupons'})}
 };
 const sendOrderConfirmation=async(order,user)=>{
-  if(!mailConfigured()||!user?.email)return false;
+  if(!user?.email){console.error('[mail] order-confirmation:missing-recipient',{orderId:order._id.toString()});return false}
   const rows=order.items.map(item=>`<tr><td style="padding:10px;border-bottom:1px solid #eee">${escapeHtml(item.name)}${item.size?`<br><small>Size: ${escapeHtml(item.size)}</small>`:''}${item.color?`<br><small>Colour: ${escapeHtml(item.color)}</small>`:''}</td><td style="padding:10px;text-align:center;border-bottom:1px solid #eee">${item.quantity}</td><td style="padding:10px;text-align:right;border-bottom:1px solid #eee">${money(item.price*item.quantity)}</td></tr>`).join('');
   await sendMail({to:user.email,subject:`Order confirmed #${displayId(order)} | Women's Styles`,text:`Thank you for your order. Order #${displayId(order)}. Total: ${money(order.amount)}. Payment: ${order.paymentMethod} (${order.paymentStatus}).`,html:`<div style="max-width:650px;margin:auto;font-family:Arial,sans-serif;color:#2a211b;line-height:1.6"><h1 style="color:#9b6d25">Thank you for your order!</h1><p>Hi ${escapeHtml(user.name||order.address?.fullName||'Customer')}, your order <b>#${displayId(order)}</b> has been placed successfully.</p><table style="width:100%;border-collapse:collapse"><thead><tr><th style="padding:10px;text-align:left;background:#f5f1ea">Item</th><th style="padding:10px;background:#f5f1ea">Qty</th><th style="padding:10px;text-align:right;background:#f5f1ea">Amount</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="2" style="padding:14px;text-align:right"><b>Total</b></td><td style="padding:14px;text-align:right"><b>${money(order.amount)}</b></td></tr></tfoot></table><p><b>Payment:</b> ${escapeHtml(order.paymentMethod)} — ${escapeHtml(order.paymentStatus)}</p><p><b>Delivery address:</b><br>${escapeHtml(order.address?.fullName)}<br>${escapeHtml(order.address?.address)}, ${escapeHtml(order.address?.city)}, ${escapeHtml(order.address?.district)}<br>${escapeHtml(order.address?.state)} - ${escapeHtml(order.address?.pincode)}</p><p style="color:#777;font-size:12px">This email is your order bill and confirmation.</p></div>`});
+  return true;
+};
+const deliverOrderConfirmation=async(order,user)=>{
+  if(order.confirmationEmailSentAt)return true;
+  try{
+    if(!await sendOrderConfirmation(order,user))return false;
+  }catch(mailError){
+    logMailError('order-confirmation',mailError,{orderId:order._id.toString(),paymentStatus:order.paymentStatus});
+    return false;
+  }
+  try{
+    order.confirmationEmailSentAt=new Date();
+    await order.save();
+  }catch(saveError){
+    // Delivery succeeded. Failure to save only affects the de-duplication marker.
+    console.error('[mail] order-confirmation:marker-save-failed',{orderId:order._id.toString(),message:saveError.message});
+  }
+  console.log('[mail] order-confirmation:sent',{orderId:order._id.toString(),paymentStatus:order.paymentStatus});
   return true;
 };
 const sendCancellationConfirmation=async(order,user)=>{
@@ -85,7 +103,10 @@ exports.create=async(req,res)=>{
       }catch(error){return res.status(400).json({message:'Valid Razorpay payment confirmation is required'})}
       if(!proof.paymentId||!proof.razorpayOrderId)return res.status(400).json({message:'Razorpay payment confirmation is incomplete'});
       const existingOrder=await Order.findOne({user:req.user._id,razorpayPaymentId:proof.paymentId});
-      if(existingOrder)return res.json(existingOrder);
+      if(existingOrder){
+        const confirmationEmailSent=await deliverOrderConfirmation(existingOrder,req.user);
+        return res.json({...existingOrder.toObject(),confirmationEmailSent});
+      }
       if(Number(proof.amount)!==Math.round(amount*100)) return res.status(400).json({message:'Paid amount does not match order total'});
       paymentStatus='Paid';
       razorpayPaymentId=proof.paymentId;
@@ -93,13 +114,11 @@ exports.create=async(req,res)=>{
     const order=await Order.create({...req.body,items,subtotal,discount,couponCode,amount,paymentStatus,razorpayPaymentId,user:req.user._id});
     for(const item of items) await Product.findOneAndUpdate({_id:item.product,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity,soldCount:item.quantity}});
     if(couponCode)await Coupon.updateOne({code:couponCode},{$inc:{usedCount:1}});
-    res.status(201).json(order);
-    // Do not keep checkout waiting for SMTP. The order is already safely stored,
-    // so send and record the confirmation independently after responding.
-    setImmediate(async()=>{
-      try{if(await sendOrderConfirmation(order,req.user)){order.confirmationEmailSentAt=new Date();await order.save()}}
-      catch(mailError){console.error('Order confirmation email failed:',mailError.message)}
-    });
+    // Await delivery so Render cannot suspend/restart the process after the HTTP
+    // response while a detached SMTP promise is still running. Mail failure never
+    // rolls back an order that has already been paid and stored.
+    const confirmationEmailSent=await deliverOrderConfirmation(order,req.user);
+    res.status(201).json({...order.toObject(),confirmationEmailSent});
   }catch(e){res.status(500).json({message:e.message})}
 };
 

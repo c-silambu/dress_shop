@@ -29,9 +29,19 @@ app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/store", require("./routes/storeRoutes"));
 
 app.get("/api/version", (req, res) => {
-  const { configured: mailConfigured } = require("./utils/mailer");
-  res.json({ version: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local", mailConfigured: mailConfigured() });
+  const { status: mailStatus } = require("./utils/mailer");
+  res.json({ version: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local", mail: mailStatus() });
 });
+
+const { configured: mailConfigured, verify: verifyMail } = require("./utils/mailer");
+if (!mailConfigured()) {
+  console.warn("[mail] configuration:missing. Order and password-reset emails are disabled.");
+} else {
+  verifyMail().then((result) => {
+    if (result.ok) console.log("[mail] verify:success", result);
+    else console.error("[mail] verify:failed", result);
+  });
+}
 
 app.get("/", (req, res) => {
   res.json({ message: "Women’s Styles API running" });
