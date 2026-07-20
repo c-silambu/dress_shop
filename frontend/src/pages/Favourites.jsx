@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import ProductCard from "../components/ProductCard";
+import { useToast } from "../context/ToastContext";
 
 export default function Favourites() {
   const [items, setItems] = useState([]);
+  const toast = useToast();
 
   useEffect(() => {
-    api.get("/favourites").then((response) => setItems(response.data));
-  }, []);
+    api.get("/favourites")
+      .then((response) => setItems(response.data))
+      .catch((error) => {
+        if (error.response?.status !== 401) {
+          toast.error(error.response?.data?.message || "Unable to load favourites");
+        }
+      });
+  }, [toast]);
 
   return (
     <section className="page-shell">

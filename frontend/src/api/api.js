@@ -26,12 +26,21 @@ api.interceptors.response.use(
   (error) => {
     const isAdminPage = window.location.pathname.startsWith("/admin");
     const isLoginRequest = error.config?.url?.includes("/admin/login");
+    const isUserAuthRequest = /\/auth\/(login|register)/.test(error.config?.url || "");
 
     if (error.response?.status === 401 && isAdminPage && !isLoginRequest) {
       localStorage.removeItem("adminToken");
       if (window.location.pathname !== "/admin/login") {
         window.location.replace("/admin/login");
       }
+    }
+
+    if (error.response?.status === 401 && !isAdminPage && !isUserAuthRequest) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("verifiedRazorpayPayment");
+      sessionStorage.removeItem("pendingRazorpayResponse");
+      if (window.location.pathname !== "/login") window.location.replace("/login");
     }
 
     return Promise.reject(error);
