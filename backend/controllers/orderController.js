@@ -27,7 +27,7 @@ const couponEligibility=async(coupon,subtotal,user)=>{
 };
 
 exports.availableCoupons=async(req,res)=>{
-  try{const subtotal=Math.max(0,Number(req.query.subtotal||0));const coupons=await Coupon.find({active:true}).sort('-createdAt');const result=[];for(const coupon of coupons){const eligibility=await couponEligibility(coupon,subtotal,req.user);result.push({_id:coupon._id,code:coupon.code,description:coupon.description,type:coupon.type,value:coupon.value,minimumOrder:coupon.minimumOrder,maximumDiscount:coupon.maximumDiscount,expiryDate:coupon.expiryDate,...eligibility})}res.json(result)}catch(error){res.status(500).json({message:'Unable to load coupons'})}
+  try{const subtotal=Math.max(0,Number(req.query.subtotal||0));const coupons=await Coupon.find({active:true}).sort('-createdAt');const result=[];for(const coupon of coupons){const eligibility=await couponEligibility(coupon,subtotal,req.user);result.push({_id:coupon._id,code:coupon.code,description:coupon.description,type:coupon.type,value:coupon.value,minimumOrder:coupon.minimumOrder,maximumDiscount:coupon.maximumDiscount,expiryDate:coupon.expiryDate,...eligibility})}res.json(result)}catch(error){console.error('Available coupons failed:',error.message);res.status(500).json({message:'Unable to load coupons'})}
 };
 const sendOrderConfirmation=async(order,user)=>{
   if(!mailConfigured()||!user?.email)return false;
@@ -79,14 +79,16 @@ exports.create=async(req,res)=>{
     let paymentStatus='Pending';
     let razorpayPaymentId;
     if(req.body.paymentMethod==='Razorpay'){
+      let proof;
       try{
-        const proof=jwt.verify(String(req.body.paymentProof||''),process.env.JWT_SECRET);
-        const existingOrder=await Order.findOne({user:req.user._id,razorpayPaymentId:proof.paymentId});
-        if(existingOrder)return res.json(existingOrder);
-        if(Number(proof.amount)!==Math.round(amount*100)) return res.status(400).json({message:'Paid amount does not match order total'});
-        paymentStatus='Paid';
-        razorpayPaymentId=proof.paymentId;
+        proof=jwt.verify(String(req.body.paymentProof||''),process.env.JWT_SECRET);
       }catch(error){return res.status(400).json({message:'Valid Razorpay payment confirmation is required'})}
+      if(!proof.paymentId||!proof.razorpayOrderId)return res.status(400).json({message:'Razorpay payment confirmation is incomplete'});
+      const existingOrder=await Order.findOne({user:req.user._id,razorpayPaymentId:proof.paymentId});
+      if(existingOrder)return res.json(existingOrder);
+      if(Number(proof.amount)!==Math.round(amount*100)) return res.status(400).json({message:'Paid amount does not match order total'});
+      paymentStatus='Paid';
+      razorpayPaymentId=proof.paymentId;
     }
     const order=await Order.create({...req.body,items,subtotal,discount,couponCode,amount,paymentStatus,razorpayPaymentId,user:req.user._id});
     for(const item of items) await Product.findOneAndUpdate({_id:item.product,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity,soldCount:item.quantity}});
