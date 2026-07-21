@@ -22,6 +22,21 @@ MAIL_PASS=your-16-character-google-app-password
 MAIL_FROM=Women's Styles
 ```
 
+## Email providers
+
+Local development uses Nodemailer SMTP. Keep `MAIL_PROVIDER=smtp` and configure `MAIL_USER` plus a Google App Password in `MAIL_PASS`.
+
+Production hosting uses the Resend API. Configure these values in the hosting dashboard (never commit the real key):
+
+```env
+NODE_ENV=production
+MAIL_PROVIDER=resend
+RESEND_API_KEY=re_xxxxxxxxx
+RESEND_FROM_EMAIL=onboarding@resend.dev
+```
+
+`onboarding@resend.dev` is intended for Resend testing. To email arbitrary customers in production, verify your own domain in Resend and set `RESEND_FROM_EMAIL` to an address on that domain.
+
 ## Local email setup
 
 Email is sent only through Nodemailer SMTP. Use `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_SECURE=true`, and a Google App Password in `MAIL_PASS`. The startup log must contain `[mail] verify:success`. Set `MAIL_DEBUG=true` only temporarily for SMTP diagnostics.
