@@ -23,7 +23,6 @@ const smtpConfig = () => {
     secure,
     requireTLS: !secure && port === 587,
     auth: credentials(),
-    family: Number(process.env.SMTP_FAMILY || 4),
     connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 10000),
     greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 10000),
     socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 20000),
