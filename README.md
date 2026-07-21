@@ -35,6 +35,8 @@ RESEND_API_KEY=re_xxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
 
+On Render, the app automatically selects Resend because free services block outbound SMTP. Remove any old `MAIL_PROVIDER=smtp` value from the Render environment to keep the dashboard configuration clear.
+
 `onboarding@resend.dev` is intended for Resend testing. To email arbitrary customers in production, verify your own domain in Resend and set `RESEND_FROM_EMAIL` to an address on that domain.
 
 ## Local email setup

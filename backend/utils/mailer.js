@@ -3,6 +3,9 @@ const { Resend } = require('resend');
 
 const clean = (value) => String(value || '').trim();
 const provider = () => {
+  // Render blocks outbound SMTP on free services. Always use the HTTPS-based
+  // Resend transport there, even if a stale MAIL_PROVIDER=smtp variable exists.
+  if (process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.RENDER_EXTERNAL_URL) return 'resend';
   const selected = clean(process.env.MAIL_PROVIDER).toLowerCase();
   if (selected === 'smtp' || selected === 'nodemailer') return 'smtp';
   if (selected === 'resend') return 'resend';
