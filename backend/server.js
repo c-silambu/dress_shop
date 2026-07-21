@@ -35,7 +35,7 @@ app.get("/api/version", (req, res) => {
 
 const { configured: mailConfigured, verify: verifyMail } = require("./utils/mailer");
 if (!mailConfigured()) {
-  console.warn("[mail] configuration:missing. Order and password-reset emails are disabled.");
+  console.warn("[mail] SMTP configuration missing. Order, password-reset and offer emails are disabled.");
 } else {
   verifyMail().then((result) => {
     if (result.ok) console.log("[mail] verify:success", result);

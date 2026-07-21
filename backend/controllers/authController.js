@@ -2,7 +2,8 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { configured: mailConfigured, logMailError, sendMail } = require("../utils/mailer");
+const { logMailError } = require("../utils/mailer");
+const { configured: mailConfigured, sendPasswordResetEmail } = require("../utils/emailService");
 
 const sign = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 const phoneDigits = (value) => String(value || "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
@@ -39,8 +40,16 @@ exports.login = async (req, res) => {
     const query = isEmail ? { email: identifier.toLowerCase() } : phoneQuery(identifier);
     if (!query) return res.status(400).json({ message: "Enter a valid email or 10-digit phone number" });
     const user = await User.findOne(query);
-    const valid = user && /^\$2[aby]\$/.test(user.password) && await bcrypt.compare(password, user.password);
+    const passwordIsHashed = user && /^\$2[aby]\$/.test(user.password || "");
+    const valid = user && (passwordIsHashed
+      ? await bcrypt.compare(password, user.password)
+      : password === String(user.password || ""));
     if (!valid) return res.status(401).json({ message: "Email/phone number or password is incorrect" });
+    // Upgrade legacy plain-text passwords after the first successful login.
+    if (!passwordIsHashed) {
+      user.password = await bcrypt.hash(password, 12);
+      await user.save({ validateBeforeSave: false });
+    }
     res.json({ token: sign(user._id), user: publicUser(user) });
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
@@ -67,15 +76,8 @@ exports.forgotPassword = async (req, res) => {
     user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
     await user.save({ validateBeforeSave: false });
 
-    const frontendUrl = String(process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
-    const resetUrl = `${frontendUrl}/reset-password/${token}`;
     try {
-      await sendMail({
-        to: user.email,
-        subject: "Reset your Women's Styles password",
-        text: `Reset your password using this link (valid for 15 minutes): ${resetUrl}`,
-        html: `<div style="font-family:Arial,sans-serif;line-height:1.6"><h2>Reset your password</h2><p>This link is valid for 15 minutes.</p><p><a href="${resetUrl}" style="background:#a91d4b;color:#fff;padding:12px 18px;text-decoration:none">Set new password</a></p><p>If you did not request this, you can ignore this email.</p></div>`
-      });
+      await sendPasswordResetEmail({ user, token });
       console.log("[mail] password-reset:sent", { userId: user._id.toString() });
     } catch (mailError) {
       user.passwordResetToken = undefined;
