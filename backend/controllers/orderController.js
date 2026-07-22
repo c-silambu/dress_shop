@@ -26,7 +26,7 @@ const couponEligibility=async(coupon,subtotal,user)=>{
 };
 
 exports.availableCoupons=async(req,res)=>{
-  try{const subtotal=Math.max(0,Number(req.query.subtotal||0));const coupons=await Coupon.find({active:true}).sort('-createdAt');const result=[];for(const coupon of coupons){const eligibility=await couponEligibility(coupon,subtotal,req.user);result.push({_id:coupon._id,code:coupon.code,description:coupon.description,type:coupon.type,value:coupon.value,minimumOrder:coupon.minimumOrder,maximumDiscount:coupon.maximumDiscount,expiryDate:coupon.expiryDate,...eligibility})}res.json(result)}catch(error){console.error('Available coupons failed:',error.message);res.status(500).json({message:'Unable to load coupons'})}
+  try{const subtotal=Math.max(0,Number(req.query.subtotal||0));const coupons=await Coupon.find({active:true}).sort('-createdAt');const result=[];for(const coupon of coupons){const eligibility=await couponEligibility(coupon,subtotal,req.user);if(coupon.firstOrderOnly&&!eligibility.eligible&&eligibility.reason==='Valid only on your first order')continue;result.push({_id:coupon._id,code:coupon.code,description:coupon.description,type:coupon.type,value:coupon.value,minimumOrder:coupon.minimumOrder,maximumDiscount:coupon.maximumDiscount,expiryDate:coupon.expiryDate,...eligibility})}res.json(result)}catch(error){console.error('Available coupons failed:',error.message);res.status(500).json({message:'Unable to load coupons'})}
 };
 const sendOrderConfirmation=async(order,user)=>{
   if(!user?.email){console.error('[mail] order-confirmation:missing-recipient',{orderId:order._id.toString()});return false}

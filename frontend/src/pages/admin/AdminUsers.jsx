@@ -49,8 +49,8 @@ export default function AdminUsers() {
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+      <label className="relative block pt-5 text-[10px] font-black uppercase tracking-widest text-rose-300">Search customers
+        <Search className="absolute bottom-4 left-4 h-4 w-4 text-white/30" />
         <input
           className="w-full rounded-2xl py-3.5 pl-11 pr-4 text-sm font-bold text-white outline-none"
           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
@@ -58,7 +58,7 @@ export default function AdminUsers() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-      </div>
+      </label>
 
       {/* Desktop Table */}
       {loading ? (

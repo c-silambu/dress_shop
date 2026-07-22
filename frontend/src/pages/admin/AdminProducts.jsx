@@ -18,14 +18,17 @@ const inputStyle = {
   fontWeight: "600",
 };
 
-function GlassInput({ as: Tag = "input", style: extraStyle = {}, ...props }) {
+function GlassInput({ as: Tag = "input", label, style: extraStyle = {}, ...props }) {
   return (
-    <Tag
-      style={{ ...inputStyle, ...extraStyle }}
-      onFocus={(e) => { e.target.style.border = "1px solid rgba(139,92,246,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.12)"; }}
-      onBlur={(e) => { e.target.style.border = "1px solid rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
-      {...props}
-    />
+    <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-300">
+      {label}{props.required && <span className="text-red-300"> *</span>}
+      <Tag
+        style={{ ...inputStyle, ...extraStyle, marginTop: ".4rem" }}
+        onFocus={(e) => { e.target.style.border = "1px solid rgba(139,92,246,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.12)"; }}
+        onBlur={(e) => { e.target.style.border = "1px solid rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+        {...props}
+      />
+    </label>
   );
 }
 
@@ -156,24 +159,24 @@ export default function AdminProducts() {
             {message && <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-bold text-red-300">{message}</p>}
             {!mainCategories.length && <p className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">Add a main category and its subcategories in Catalogue &amp; Offers before adding a product.</p>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <GlassInput name="name" value={form.name || ""} onChange={handleChange} placeholder="Product name" required />
-              <GlassInput name="brand" value={form.brand || ""} onChange={handleChange} placeholder="Brand" required />
-              <GlassInput as="select" name="mainCategory" value={form.mainCategory} onChange={(e) => setForm((current) => ({ ...current, mainCategory: e.target.value, subCategory: "", sizes: "", colors: "", fabric: "", pattern: "", materialType: "" }))} required>
+              <GlassInput label="Product name" name="name" value={form.name || ""} onChange={handleChange} placeholder="Enter product name" required />
+              <GlassInput label="Brand" name="brand" value={form.brand || ""} onChange={handleChange} placeholder="Enter brand name" required />
+              <GlassInput label="Main category" as="select" name="mainCategory" value={form.mainCategory} onChange={(e) => setForm((current) => ({ ...current, mainCategory: e.target.value, subCategory: "", sizes: "", colors: "", fabric: "", pattern: "", materialType: "" }))} required>
                 <option style={{ background: "#1a1040" }} value="">Select category</option>
                 {mainCategories.map((category) => <option key={category._id} style={{ background: "#1a1040" }} value={category.name}>{category.name}</option>)}
               </GlassInput>
-              <GlassInput as="select" name="subCategory" value={form.subCategory} onChange={handleChange} required disabled={!form.mainCategory}>
+              <GlassInput label="Subcategory" as="select" name="subCategory" value={form.subCategory} onChange={handleChange} required disabled={!form.mainCategory}>
                 <option style={{ background: "#1a1040" }} value="">Select subcategory</option>
                 {formSubCategories.map((category) => <option key={category._id} style={{ background: "#1a1040" }} value={category.name}>{category.name}</option>)}
               </GlassInput>
-              <GlassInput name="price" type="number" min="0" step="0.01" value={form.price || ""} onChange={handleChange} placeholder="Actual price" required />
-              <GlassInput name="discountPrice" type="number" min="0" step="0.01" value={form.discountPrice || ""} onChange={handleChange} placeholder="Discount price" />
-              {!isJewellery && <GlassInput name="colors" value={form.colors || ""} onChange={handleChange} placeholder="Colors: Red, Blue, Black" required />}
-              {isJewellery && <GlassInput name="materialType" value={form.materialType || ""} onChange={handleChange} placeholder="Material type: Gold, Silver, Brass..." required />}
+              <GlassInput label="Actual price (₹)" name="price" type="number" min="0" step="0.01" value={form.price || ""} onChange={handleChange} placeholder="Enter actual price" required />
+              <GlassInput label="Discount price (₹)" name="discountPrice" type="number" min="0" step="0.01" value={form.discountPrice || ""} onChange={handleChange} placeholder="Optional discounted price" />
+              {!isJewellery && <GlassInput label="Available colours" name="colors" value={form.colors || ""} onChange={handleChange} placeholder="Red, Blue, Black" required />}
+              {isJewellery && <GlassInput label="Material type" name="materialType" value={form.materialType || ""} onChange={handleChange} placeholder="Gold, Silver, Brass..." required />}
               {[["stock","Stock"],["lowStockThreshold","Low-stock alert"],...(!isJewellery ? [["fabric","Fabric"],["pattern","Pattern"]] : []),["countryOfOrigin","Country of origin"]].map(([field, label]) => (
-                <GlassInput key={field} name={field} value={form[field] || ""} onChange={handleChange} placeholder={label} type={["stock","lowStockThreshold"].includes(field) ? "number" : "text"} required={["fabric","pattern"].includes(field)} />
+                <GlassInput label={label} key={field} name={field} value={form[field] || ""} onChange={handleChange} placeholder={`Enter ${label.toLowerCase()}`} type={["stock","lowStockThreshold"].includes(field) ? "number" : "text"} required={["fabric","pattern"].includes(field)} />
               ))}
-              <GlassInput as="select" name="status" value={form.status} onChange={handleChange}>
+              <GlassInput label="Product status" as="select" name="status" value={form.status} onChange={handleChange}>
                 <option style={{ background: "#1a1040" }} value="Active">Active</option>
                 <option style={{ background: "#1a1040" }} value="Inactive">Inactive</option>
                 <option style={{ background: "#1a1040" }} value="Draft">Draft</option>
@@ -183,7 +186,7 @@ export default function AdminProducts() {
               {[0, 1, 2].map((index) => <div key={index}>
                 <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-blue-300">Image {index + 1}</label>
                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleFile(index, e.target.files?.[0])} className="w-full text-xs text-white/50 file:mr-2 file:rounded-xl file:border-0 file:px-3 file:py-2 file:text-xs file:font-bold file:text-white" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "0.875rem", padding: "0.5rem" }} />
-                <p className="my-2 text-center text-[10px] font-black uppercase text-white/30">or paste URL</p>
+                <p className="my-2 text-[10px] font-black uppercase text-blue-300">Image {index + 1} URL (or upload file above)</p>
                 <input type="url" value={imageUrls[index]} disabled={!!files[index]} onChange={(e) => { const next=[...imageUrls]; next[index]=e.target.value; setImageUrls(next); const previews=[...preview]; previews[index]=e.target.value; setPreview(previews); }} placeholder={`Image ${index + 1} URL`} className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-xs text-white outline-none disabled:opacity-40" />
               </div>)}
             </div>
@@ -194,9 +197,9 @@ export default function AdminProducts() {
                 return <button key={size} type="button" onClick={() => toggleSize(size)} className={`rounded-xl border px-4 py-2 text-xs font-black ${selected ? "border-blue-400 bg-blue-500 text-white" : "border-white/10 bg-white/5 text-white/60"}`}>{size}</button>;
               })}</div>
             </div>
-            <GlassInput as="textarea" name="about" value={form.about || ""} onChange={handleChange} placeholder="About product (short highlights)" style={{ ...inputStyle, resize: "none" }} rows={3} required />
-            <GlassInput as="textarea" name="description" value={form.description || ""} onChange={handleChange} placeholder="Detailed product description" style={{ ...inputStyle, resize: "none" }} rows={4} required />
-            {!isJewellery && <GlassInput as="textarea" name="washCare" value={form.washCare || ""} onChange={handleChange} placeholder="Wash-care instructions" style={{ ...inputStyle, resize: "none" }} rows={2} />}
+            <GlassInput label="About product" as="textarea" name="about" value={form.about || ""} onChange={handleChange} placeholder="Enter short product highlights" style={{ ...inputStyle, resize: "none" }} rows={3} required />
+            <GlassInput label="Detailed description" as="textarea" name="description" value={form.description || ""} onChange={handleChange} placeholder="Enter complete product description" style={{ ...inputStyle, resize: "none" }} rows={4} required />
+            {!isJewellery && <GlassInput label="Wash-care instructions" as="textarea" name="washCare" value={form.washCare || ""} onChange={handleChange} placeholder="Enter wash and care instructions" style={{ ...inputStyle, resize: "none" }} rows={2} />}
             <div className="flex flex-wrap gap-5">
               {[["featured","Featured"],["bestseller","Bestseller"],["newArrival","New arrival"]].map(([key,label]) => <label key={key} className="flex items-center gap-2 text-sm font-bold text-white/70"><input type="checkbox" checked={!!form[key]} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.checked }))} />{label}</label>)}
             </div>
@@ -224,8 +227,8 @@ export default function AdminProducts() {
             <span className="rounded-full px-2.5 py-0.5 text-xs font-black text-blue-300" style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.2)" }}>{filtered.length}</span>
           </div>
           <div className="flex gap-2">
-            <div className="relative flex-1 sm:w-56">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <label className="relative flex-1 pt-5 text-[10px] font-bold uppercase tracking-widest text-blue-300 sm:w-56">Search products
+              <Search className="absolute bottom-3 left-3 h-4 w-4 text-white/30" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -233,9 +236,9 @@ export default function AdminProducts() {
                 className="w-full rounded-xl py-2.5 pl-9 pr-3 text-sm font-bold text-white outline-none"
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
               />
-            </div>
-            <div className="relative">
-              <SlidersHorizontal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            </label>
+            <label className="relative pt-5 text-[10px] font-bold uppercase tracking-widest text-blue-300">Filter category
+              <SlidersHorizontal className="absolute bottom-3 left-3 h-4 w-4 text-white/30" />
               <select
                 value={filterCat}
                 onChange={(e) => setFilterCat(e.target.value)}
@@ -246,7 +249,7 @@ export default function AdminProducts() {
                 <option style={{ background: "#1a1040" }} value="Women's Dress">Dress</option>
                 <option style={{ background: "#1a1040" }} value="Jewellery">Jewellery</option>
               </select>
-            </div>
+            </label>
           </div>
         </div>
 
