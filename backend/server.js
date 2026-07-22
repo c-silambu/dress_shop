@@ -14,7 +14,7 @@ connectDB();
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({   origin: [
     "http://localhost:5173",
-    "https://dress-shop-wm4n.vercel.app"
+    "https://dress-shop-tvu9.vercel.app"
   ]
   , credentials: true, exposedHeaders: ["X-Total-Count"] }));
 app.use(express.json());
