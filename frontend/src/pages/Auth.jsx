@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeOff, Lock, Mail, Phone, Sparkles, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoogleSignIn from "../components/GoogleSignIn";
 
 export default function Auth({ registerMode = false }) {
   const [isRegister, setIsRegister] = useState(registerMode);
@@ -9,7 +10,7 @@ export default function Auth({ registerMode = false }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login, register } = useAuth();
+  const { login, register, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (event) => setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
@@ -24,6 +25,19 @@ export default function Auth({ registerMode = false }) {
       navigate("/");
     } catch (error) {
       setError(error.response?.data?.message || "Unable to connect. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async (credential) => {
+    setError("");
+    setLoading(true);
+    try {
+      await googleLogin(credential);
+      navigate("/");
+    } catch (error) {
+      setError(error.response?.data?.message || "Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -97,6 +111,10 @@ export default function Auth({ registerMode = false }) {
           {error && <div role="alert" className="mt-4 border border-[#e6b8c5] bg-[#fff1f5] px-4 py-3 text-sm font-bold text-[#8f163d]">{error}</div>}
 
           <button disabled={loading} className="btn-primary mt-6 w-full disabled:opacity-60">{loading ? "Please wait..." : isRegister ? "Create Account" : "Login"}</button>
+          <div className="my-5 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.18em] text-[#9a9188]">
+            <span className="h-px flex-1 bg-[#e9e0d7]" /> or <span className="h-px flex-1 bg-[#e9e0d7]" />
+          </div>
+          <GoogleSignIn onCredential={handleGoogle} disabled={loading} />
           <button type="button" onClick={() => setIsRegister((value) => !value)} className="btn-soft mt-3 w-full">
             {isRegister ? "Already have an account? Login" : "New user? Create account"}
           </button>

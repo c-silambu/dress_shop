@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Heart, LogOut, PackageCheck, Phone, ShoppingBag, User } from "lucide-react";
+import { ChevronRight, Heart, LogOut, Mail, PackageCheck, Phone, ShoppingBag } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Profile() {
@@ -29,15 +29,17 @@ export default function Profile() {
       <div className="section-wrap grid gap-6 py-8 md:grid-cols-[360px_1fr] md:py-12">
         <aside className="profile-identity fashion-panel p-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 items-center justify-center bg-[#15120f] text-2xl font-black text-white">
-              {initials}
-            </div>
+            {user?.avatar ? <img src={user.avatar} alt={user.name || "Profile"} referrerPolicy="no-referrer" className="h-20 w-20 rounded-full object-cover" /> : <div className="flex h-20 w-20 items-center justify-center bg-[#15120f] text-2xl font-black text-white">{initials}</div>}
             <div className="min-w-0">
               <h2 className="truncate text-2xl font-black text-[#15120f]">{user?.name || "User"}</h2>
               <p className="truncate text-sm text-[#756f66]">{user?.email || user?.phone || "Member"}</p>
             </div>
           </div>
           <div className="mt-6 grid gap-3">
+            <div className="border border-[#e9e0d7] bg-[#fbfaf7] p-4">
+              <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#a91d4b]" /><p className="editorial-kicker text-[9px]">Email</p></div>
+              <p className="mt-1 truncate text-sm font-black text-[#15120f]">{user?.email || "-"}</p>
+            </div>
             <div className="border border-[#e9e0d7] bg-[#fbfaf7] p-4">
               <p className="editorial-kicker text-[9px]">Name</p>
               <p className="mt-1 truncate text-sm font-black text-[#15120f]">{user?.name || "-"}</p>

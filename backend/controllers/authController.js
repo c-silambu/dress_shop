@@ -2,12 +2,13 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { OAuth2Client } = require("google-auth-library");
 const { logMailError } = require("../utils/mailer");
 const { configured: mailConfigured, sendPasswordResetEmail } = require("../utils/emailService");
 
 const sign = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 const phoneDigits = (value) => String(value || "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-const publicUser = (user) => ({ id: user._id, name: user.name, email: user.email, phone: user.phone });
+const publicUser = (user) => ({ id: user._id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, authProvider: user.authProvider });
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const phoneQuery = (value) => {
   const digits = phoneDigits(value);
@@ -26,7 +27,7 @@ exports.register = async (req, res) => {
     if (await User.exists({ name: new RegExp(`^${escapeRegex(name)}$`, "i") })) return res.status(409).json({ message: "This username is already taken" });
     if (await User.findOne(phoneQuery(phone))) return res.status(409).json({ message: "This phone number is already registered. Please log in." });
     if (email && await User.exists({ email })) return res.status(409).json({ message: "This email is already registered" });
-    const user = await User.create({ name, email, phone, password: await bcrypt.hash(password, 12) });
+    const user = await User.create({ name, email, phone, password: await bcrypt.hash(password, 12), authProvider: "local" });
     res.status(201).json({ token: sign(user._id), user: publicUser(user) });
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
@@ -39,7 +40,7 @@ exports.login = async (req, res) => {
     const isEmail = identifier.includes("@");
     const query = isEmail ? { email: identifier.toLowerCase() } : phoneQuery(identifier);
     if (!query) return res.status(400).json({ message: "Enter a valid email or 10-digit phone number" });
-    const user = await User.findOne(query);
+    const user = await User.findOne(query).select("+password");
     const passwordIsHashed = user && /^\$2[aby]\$/.test(user.password || "");
     const valid = user && (passwordIsHashed
       ? await bcrypt.compare(password, user.password)
@@ -52,6 +53,43 @@ exports.login = async (req, res) => {
     }
     res.json({ token: sign(user._id), user: publicUser(user) });
   } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const credential = String(req.body.credential || "");
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) return res.status(503).json({ message: "Google login is not configured" });
+    if (!credential) return res.status(400).json({ message: "Google credential is required" });
+
+    const ticket = await new OAuth2Client(clientId).verifyIdToken({ idToken: credential, audience: clientId });
+    const payload = ticket.getPayload();
+    if (!payload?.sub || !payload.email || !payload.email_verified) {
+      return res.status(401).json({ message: "Google account email could not be verified" });
+    }
+
+    const email = payload.email.toLowerCase();
+    let user = await User.findOne({ $or: [{ googleId: payload.sub }, { email }] }).select("+googleId");
+    if (user) {
+      user.googleId = payload.sub;
+      user.authProvider = "google";
+      user.name = payload.name || user.name;
+      user.avatar = payload.picture || user.avatar;
+      await user.save({ validateBeforeSave: false });
+    } else {
+      user = await User.create({
+        name: payload.name || email.split("@")[0],
+        email,
+        avatar: payload.picture,
+        googleId: payload.sub,
+        authProvider: "google",
+      });
+    }
+    res.json({ token: sign(user._id), user: publicUser(user) });
+  } catch (error) {
+    console.error("[auth] google-login-failed", { message: error.message });
+    res.status(401).json({ message: "Google sign-in failed. Please try again." });
+  }
 };
 
 exports.forgotPassword = async (req, res) => {
@@ -115,6 +153,14 @@ exports.resetPassword = async (req, res) => {
 exports.adminLogin = (req, res) => {
   const username = String(req.body.username || "").trim();
   const password = String(req.body.password || "");
-  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) return res.json({ token: jwt.sign({ admin: true, username }, process.env.JWT_SECRET, { expiresIn: "7d" }), admin: { username } });
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    const admin = {
+      name: process.env.ADMIN_NAME || username,
+      username,
+      email: process.env.ADMIN_EMAIL || "",
+      avatar: process.env.ADMIN_PROFILE_PIC || "",
+    };
+    return res.json({ token: jwt.sign({ admin: true, username }, process.env.JWT_SECRET, { expiresIn: "7d" }), admin });
+  }
   res.status(401).json({ message: "Invalid admin credentials" });
 };

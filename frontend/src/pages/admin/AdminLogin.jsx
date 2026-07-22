@@ -17,6 +17,7 @@ export default function AdminLogin() {
     try {
       const { data } = await api.post("/admin/login", form);
       localStorage.setItem("adminToken", data.token);
+      localStorage.setItem("admin", JSON.stringify(data.admin));
       navigate("/admin");
     } catch {
       setError("Invalid username or password. Please try again.");

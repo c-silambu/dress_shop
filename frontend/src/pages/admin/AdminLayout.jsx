@@ -15,9 +15,13 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sideOpen, setSideOpen] = useState(false);
+  let admin = {};
+  try { admin = JSON.parse(localStorage.getItem("admin") || "{}"); } catch { admin = {}; }
+  const initials = (admin.name || admin.username || "A").split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 
   const logout = () => {
     localStorage.removeItem("adminToken");
+    localStorage.removeItem("admin");
     navigate("/admin/login");
   };
 
@@ -54,7 +58,11 @@ export default function AdminLayout() {
 
         <nav className="flex-1 space-y-2 overflow-y-auto px-4">{navItems()}<Link to="/" className="flex items-center gap-3 border border-white/10 px-4 py-3.5 text-sm font-black text-white/60"><Store className="h-5 w-5"/>View Storefront</Link></nav>
 
-        <div className="p-4">
+        <div className="border-t border-white/10 p-4">
+          <div className="mb-3 flex items-center gap-3 px-2">
+            {admin.avatar ? <img src={admin.avatar} alt={admin.name || "Admin"} className="h-11 w-11 rounded-full object-cover" /> : <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#d6b36a] text-sm font-black text-[#15120f]">{initials}</div>}
+            <div className="min-w-0"><p className="truncate text-sm font-black">{admin.name || admin.username || "Admin"}</p><p className="truncate text-xs text-white/45">{admin.email || "Administrator"}</p></div>
+          </div>
           <button onClick={logout} className="flex w-full items-center gap-3 border border-white/10 px-4 py-3.5 text-sm font-black text-white/58 transition hover:border-[#a91d4b] hover:text-[#ff9bb7]">
             <LogOut className="h-5 w-5" />
             Logout
@@ -84,6 +92,10 @@ export default function AdminLayout() {
               </div>
             </div>
             <nav className="flex-1 space-y-2">{navItems(() => setSideOpen(false))}</nav>
+            <div className="mb-3 flex items-center gap-3 border-t border-white/10 pt-4">
+              {admin.avatar ? <img src={admin.avatar} alt={admin.name || "Admin"} className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d6b36a] text-xs font-black text-[#15120f]">{initials}</div>}
+              <div className="min-w-0"><p className="truncate text-sm font-black">{admin.name || admin.username || "Admin"}</p><p className="truncate text-[11px] text-white/45">{admin.email || "Administrator"}</p></div>
+            </div>
             <button onClick={logout} className="border border-white/10 px-4 py-3 text-sm font-black text-[#ff9bb7]">Logout</button>
           </div>
         </div>

@@ -87,9 +87,7 @@ export default function AdminUsers() {
                   <tr key={user._id} className="transition hover:bg-white/5" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${AVATAR_GRADS[idx % AVATAR_GRADS.length]} text-sm font-black text-white`}>
-                          {getInitials(user.name)}
-                        </div>
+                        {user.avatar ? <img src={user.avatar} alt={user.name || "Customer"} referrerPolicy="no-referrer" className="h-9 w-9 shrink-0 rounded-xl object-cover" /> : <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${AVATAR_GRADS[idx % AVATAR_GRADS.length]} text-sm font-black text-white`}>{getInitials(user.name)}</div>}
                         <span className="text-sm font-black text-white">{user.name || "—"}</span>
                       </div>
                     </td>
@@ -114,9 +112,7 @@ export default function AdminUsers() {
           <div className="space-y-2.5 md:hidden">
             {filtered.map((user, idx) => (
               <div key={user._id} className="flex items-center gap-4 rounded-2xl p-4" style={glassCard}>
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${AVATAR_GRADS[idx % AVATAR_GRADS.length]} text-base font-black text-white`}>
-                  {getInitials(user.name)}
-                </div>
+                {user.avatar ? <img src={user.avatar} alt={user.name || "Customer"} referrerPolicy="no-referrer" className="h-12 w-12 shrink-0 rounded-2xl object-cover" /> : <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${AVATAR_GRADS[idx % AVATAR_GRADS.length]} text-base font-black text-white`}>{getInitials(user.name)}</div>}
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-sm font-black text-white">{user.name || "—"}</p>
                   <div className="mt-1 space-y-0.5">

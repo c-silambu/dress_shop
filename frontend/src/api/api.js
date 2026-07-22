@@ -30,6 +30,7 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && isAdminPage && !isLoginRequest) {
       localStorage.removeItem("adminToken");
+      localStorage.removeItem("admin");
       if (window.location.pathname !== "/admin/login") {
         window.location.replace("/admin/login");
       }

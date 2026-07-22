@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Heart, Home, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const menuItems = [
   { name: "Home", path: "/" },
@@ -15,6 +16,7 @@ function BrandMark() {
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
   return <>
     <div className="offer-strip"><ChevronLeft/><p>Buy 2, Save ₹200 <b>|</b> Buy 3, Save ₹500</p><ChevronRight/></div>
     <header className="site-header">
@@ -22,7 +24,7 @@ export default function Navbar() {
         <Link to="/" onClick={() => setOpen(false)}><BrandMark/></Link>
         <nav className="desktop-menu">{menuItems.map(item => <NavLink key={item.name} to={item.path} className={({isActive}) => isActive ? "active" : ""}>{item.name}</NavLink>)}</nav>
         <div className="nav-actions">
-          <Link to="/dress" aria-label="Search"><Search/></Link><Link to="/profile" aria-label="Account"><User/></Link><Link to="/favourites" aria-label="Wishlist" className="desktop-heart"><Heart/></Link><Link to="/cart" aria-label="Cart"><ShoppingBag/></Link>
+          <Link to="/dress" aria-label="Search"><Search/></Link><Link to="/profile" aria-label="Account">{user?.avatar ? <img src={user.avatar} alt="" referrerPolicy="no-referrer" className="h-7 w-7 rounded-full object-cover" /> : <User/>}</Link><Link to="/favourites" aria-label="Wishlist" className="desktop-heart"><Heart/></Link><Link to="/cart" aria-label="Cart"><ShoppingBag/></Link>
           <button onClick={() => setOpen(v=>!v)} className="mobile-menu-button">{open?<X/>:<Menu/>}</button>
         </div>
       </div>
