@@ -1,6 +1,7 @@
 import React,{useEffect,useState}from"react";
 import{ArrowRight,ChevronLeft,ChevronRight}from"lucide-react";
 import{Link}from"react-router-dom";
+import{prefetchFirstProductPage}from"../api/productCache";
 
 const slides=[
  {eyebrow:"The New Edit",title:"Everyday elegance, made for you.",text:"Modern dresses and thoughtful details for days that deserve a little more style.",image:"https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1800",position:"center 18%"},
@@ -16,6 +17,7 @@ const categories=[
 export default function Home(){
  const[active,setActive]=useState(0);
  useEffect(()=>{const id=setInterval(()=>setActive(v=>(v+1)%slides.length),6000);return()=>clearInterval(id)},[]);
+ useEffect(()=>{prefetchFirstProductPage("dress");prefetchFirstProductPage("jewellery")},[]);
  const slide=slides[active];
  return <main className="new-home">
   <section className="nh-hero">

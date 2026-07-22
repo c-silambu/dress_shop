@@ -34,8 +34,8 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<UserLayout><Home /></UserLayout>} />
-        <Route path="/dress" element={<UserLayout><ProductList category="Women’s Dress" /></UserLayout>} />
-        <Route path="/jewellery" element={<UserLayout><ProductList category="Jewellery" /></UserLayout>} />
+        <Route path="/dress" element={<UserLayout><ProductList category="Women’s Dress" cacheCategory="dress" /></UserLayout>} />
+        <Route path="/jewellery" element={<UserLayout><ProductList category="Jewellery" cacheCategory="jewellery" /></UserLayout>} />
         <Route path="/product/:id" element={<UserLayout><ProductDetails /></UserLayout>} />
         <Route path="/login" element={<UserLayout><Auth /></UserLayout>} />
         <Route path="/register" element={<UserLayout><Auth registerMode /></UserLayout>} />

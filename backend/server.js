@@ -16,7 +16,7 @@ app.use(cors({   origin: [
     "http://localhost:5173",
     "https://dress-shop-wm4n.vercel.app"
   ]
-  , credentials: true }));
+  , credentials: true, exposedHeaders: ["X-Total-Count"] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));

@@ -97,7 +97,9 @@ exports.getProducts = async (req, res) => {
     const query = {};
 
     if (req.query.category) {
-      query.mainCategory = flexibleName(req.query.category);
+      query.mainCategory = String(req.query.category).trim().toLowerCase() === "dress"
+        ? /dress/i
+        : flexibleName(req.query.category);
     }
 
     if (req.query.subCategory) {
@@ -118,7 +120,20 @@ exports.getProducts = async (req, res) => {
     if(req.query.minPrice||req.query.maxPrice) query.price={...(req.query.minPrice&&{$gte:Number(req.query.minPrice)}),...(req.query.maxPrice&&{$lte:Number(req.query.maxPrice)})};
     ['featured','bestseller','newArrival'].forEach(k=>{if(req.query[k]!==undefined)query[k]=req.query[k]==='true'});
     const sorts={featured:'-featured -createdAt',bestSelling:'-soldCount',newest:'-createdAt',oldest:'createdAt',priceAsc:'discountPrice price',priceDesc:'-discountPrice -price',nameAsc:'name',nameDesc:'-name'};
-    const products = await Product.find(query).sort(sorts[req.query.sort]||"-createdAt");
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const requestedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = requestedLimit ? Math.min(100, Math.max(1, requestedLimit)) : 0;
+    const productQuery = Product.find(query).sort(sorts[req.query.sort]||"-createdAt");
+    if (limit) productQuery.skip((page - 1) * limit).limit(limit);
+    let products;
+    let total;
+    if (limit) {
+      [products, total] = await Promise.all([productQuery, Product.countDocuments(query)]);
+    } else {
+      products = await productQuery;
+      total = products.length;
+    }
+    res.set("X-Total-Count", String(total));
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
