@@ -5,7 +5,7 @@ import{useToast}from'../../context/ToastContext';
 
 const box="border border-white/10 bg-white/[0.04] p-5";
 const input="w-full border border-white/10 bg-white/[0.05] px-3 py-2.5 text-sm text-white outline-none";
-const label="text-xs font-bold text-white/55";
+const label="block text-[11px] font-black uppercase tracking-[.1em] text-[#4b3a2d]";
 const emptyOffer={enabled:false,label:'',message:'',couponCode:'',buttonText:'Shop Now',buttonUrl:'/dress'};
 const emptyCoupon={code:'',description:'',type:'percentage',value:'',minimumOrder:0,maximumDiscount:0,firstOrderOnly:false,active:true};
 
