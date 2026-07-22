@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
@@ -24,14 +24,18 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCommerce from "./pages/admin/AdminCommerce";
 import AdminCategories from "./pages/admin/AdminCategories";
+import ProductLoader from "./Productlode/ProductLoader";
 
 function UserLayout({ children }) {
   return <Layout>{children}</Layout>;
 }
 
 export default function App() {
+  const [initialLoading, setInitialLoading] = useState(true);
+  const finishInitialLoading = useCallback(() => setInitialLoading(false), []);
   return (
     <AuthProvider>
+      {initialLoading && <ProductLoader autoHide onDone={finishInitialLoading} />}
       <Routes>
         <Route path="/" element={<UserLayout><Home /></UserLayout>} />
         <Route path="/dress" element={<UserLayout><ProductList category="Women’s Dress" cacheCategory="dress" /></UserLayout>} />

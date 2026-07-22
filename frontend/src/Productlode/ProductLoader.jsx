@@ -1,20 +1,28 @@
 import { useEffect, useState } from "react";
 
-export default function ProductLoader() {
+export default function ProductLoader({ autoHide = false, onDone }) {
   const [hide, setHide] = useState(false);
+  const [finished, setFinished] = useState(false);
 
   useEffect(() => {
+    if (!autoHide) return undefined;
     const timer = setTimeout(() => {
       setHide(true);
-    }, 3000);
+    }, 1800);
+    const doneTimer = setTimeout(() => {
+      setFinished(true);
+      onDone?.();
+    }, 2300);
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => { clearTimeout(timer); clearTimeout(doneTimer); };
+  }, [autoHide, onDone]);
+
+  if (finished) return null;
 
   return (
     <div
       className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-500 ${
-        hide ? "opacity-0 backdrop-blur-0" : "opacity-100 backdrop-blur-sm"
+        hide ? "pointer-events-none opacity-0 backdrop-blur-0" : "opacity-100 backdrop-blur-sm"
       }`}
     >
       <div

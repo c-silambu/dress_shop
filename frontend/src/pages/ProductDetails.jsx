@@ -18,7 +18,11 @@ export default function ProductDetails() {
   const [cartAdded, setCartAdded] = useState(false);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setProduct(null);
     setSelectedImg(0);
+    setQuantity(1);
+    setCartAdded(false);
     setSelectedSize("");
     setSelectedColor("");
     setSelectionError("");
