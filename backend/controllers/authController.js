@@ -55,27 +55,67 @@ exports.login = async (req, res) => {
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
+const { OAuth2Client } = require("google-auth-library");
+const User = require("../models/User");
+
 exports.googleLogin = async (req, res) => {
   try {
     const credential = String(req.body.credential || "");
     const clientId = process.env.GOOGLE_CLIENT_ID;
-    if (!clientId) return res.status(503).json({ message: "Google login is not configured" });
-    if (!credential) return res.status(400).json({ message: "Google credential is required" });
 
-    const ticket = await new OAuth2Client(clientId).verifyIdToken({ idToken: credential, audience: clientId });
+    if (!clientId) {
+      return res.status(503).json({
+        message: "Google login is not configured",
+      });
+    }
+
+    if (!credential) {
+      return res.status(400).json({
+        message: "Google credential is required",
+      });
+    }
+
+    console.log("====================================");
+    console.log("Google Login Started");
+    console.log("Client ID:", clientId);
+    console.log("Credential Received:", credential ? "YES" : "NO");
+    console.log("====================================");
+
+    const client = new OAuth2Client(clientId);
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
+
     const payload = ticket.getPayload();
+
+    console.log("Google Payload:", payload);
+
     if (!payload?.sub || !payload.email || !payload.email_verified) {
-      return res.status(401).json({ message: "Google account email could not be verified" });
+      return res.status(401).json({
+        message: "Google account email could not be verified",
+      });
     }
 
     const email = payload.email.toLowerCase();
-    let user = await User.findOne({ $or: [{ googleId: payload.sub }, { email }] }).select("+googleId");
+
+    let user = await User.findOne({
+      $or: [
+        { googleId: payload.sub },
+        { email: email },
+      ],
+    }).select("+googleId");
+
     if (user) {
       user.googleId = payload.sub;
       user.authProvider = "google";
       user.name = payload.name || user.name;
       user.avatar = payload.picture || user.avatar;
-      await user.save({ validateBeforeSave: false });
+
+      await user.save({
+        validateBeforeSave: false,
+      });
     } else {
       user = await User.create({
         name: payload.name || email.split("@")[0],
@@ -85,10 +125,30 @@ exports.googleLogin = async (req, res) => {
         authProvider: "google",
       });
     }
-    res.json({ token: sign(user._id), user: publicUser(user) });
+
+    return res.status(200).json({
+      token: sign(user._id),
+      user: publicUser(user),
+    });
+
   } catch (error) {
-    console.error("[auth] google-login-failed", { message: error.message });
-    res.status(401).json({ message: "Google sign-in failed. Please try again." });
+    console.error("====================================");
+    console.error("GOOGLE LOGIN ERROR");
+    console.error("Name:", error.name);
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+
+    if (error.response) {
+      console.error("Response:", error.response.data);
+    }
+
+    console.error("====================================");
+
+    return res.status(401).json({
+      success: false,
+      error: error.name,
+      message: error.message,
+    });
   }
 };
 
