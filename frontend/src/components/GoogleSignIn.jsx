@@ -4,8 +4,13 @@ const SCRIPT_ID = "google-identity-services";
 
 export default function GoogleSignIn({ onCredential, disabled = false }) {
   const buttonRef = useRef(null);
+  const callbackRef = useRef(onCredential);
   const [error, setError] = useState("");
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  useEffect(() => {
+    callbackRef.current = onCredential;
+  }, [onCredential]);
 
   useEffect(() => {
     if (!clientId || disabled) return undefined;
@@ -14,10 +19,15 @@ export default function GoogleSignIn({ onCredential, disabled = false }) {
     const render = () => {
       if (cancelled || !window.google || !buttonRef.current) return;
       buttonRef.current.innerHTML = "";
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: ({ credential }) => credential && onCredential(credential),
-      });
+
+      if (!window.__googleIdentityInitialized) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: ({ credential }) => credential && callbackRef.current(credential),
+        });
+        window.__googleIdentityInitialized = true;
+      }
+
       window.google.accounts.id.renderButton(buttonRef.current, {
         type: "standard",
         theme: "outline",
@@ -43,7 +53,7 @@ export default function GoogleSignIn({ onCredential, disabled = false }) {
       document.head.appendChild(script);
     }
     return () => { cancelled = true; };
-  }, [clientId, disabled, onCredential]);
+  }, [clientId]);
 
   if (!clientId) return null;
   return (

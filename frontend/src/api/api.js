@@ -26,7 +26,7 @@ api.interceptors.response.use(
   (error) => {
     const isAdminPage = window.location.pathname.startsWith("/admin");
     const isLoginRequest = error.config?.url?.includes("/admin/login");
-    const isUserAuthRequest = /\/auth\/(login|register)/.test(error.config?.url || "");
+    const isUserAuthRequest = /\/auth\/(login|register|google)/.test(error.config?.url || "");
 
     if (error.response?.status === 401 && isAdminPage && !isLoginRequest) {
       localStorage.removeItem("adminToken");
