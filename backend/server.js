@@ -11,7 +11,7 @@ const app = express();
 
 connectDB();
 
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(helmet({ crossOriginResourcePolicy: false, crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" } }));
 app.use(cors({   origin: [
     "http://localhost:5173",
     "https://dress-shop-tvu9.vercel.app"
