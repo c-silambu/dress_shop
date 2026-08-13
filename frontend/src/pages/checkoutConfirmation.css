@@ -1,0 +1,12 @@
+@keyframes confirm-order-loading {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(225%); }
+}
+
+.confirm-order-progress {
+  animation: confirm-order-loading 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-order-progress { animation: none; }
+}
